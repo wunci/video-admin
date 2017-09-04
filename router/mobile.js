@@ -23,6 +23,7 @@ router.get('/vi/list', async(ctx, next) => {
 // 获取单个id的信息
 router.get('/vi/:id',async(ctx) => {
     ctx.set('Access-Control-Allow-Origin', '*');
+
     await apiModel.getDataById(ctx.params.id)
         .then(res => {
             ctx.body = res
@@ -88,11 +89,25 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
     var videoImg = data.videoImg;
     var star = data.star;
     var uid = ctx.params.id;
+    var newStar
     console.log(data)
     await apiModel.addLike([like, name, videoName, videoImg, star , uid])
         .then(res => {
             ctx.body = 'success'
         })
+    // 修改评分
+    await Promise.all([
+            apiModel.getLikeStar(1,uid),
+            apiModel.getUidLikeLength(uid)
+        ]).then(res=>{
+            var data = JSON.parse(JSON.stringify(res))
+            var newStar = (data[0].length / data[1].length * 10).toFixed(1)
+            console.log('newStar',newStar)
+            console.log(data)
+            apiModel.updateStar([newStar,uid])
+        })
+        
+        
 })
 // 获取单个video的like信息
 router.get('/vi/:id/like',async(ctx) => {
@@ -101,7 +116,11 @@ router.get('/vi/:id/like',async(ctx) => {
     var name = decodeURIComponent(ctx.querystring.split('=')[1])
     var uid = ctx.params.id;
     // console.log(data)
-    await apiModel.getLike(name,uid)
+    await Promise.all([
+            apiModel.getLike(name,uid),
+            apiModel.getLikeStar(1,uid),
+            apiModel.getUidLikeLength(uid)
+        ])
         .then(res => {
             ctx.body = res
         }).catch(err=>{
