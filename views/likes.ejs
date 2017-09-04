@@ -1,0 +1,32 @@
+<% include header %>
+	
+	<table class="ui striped table">
+	 	<thead>
+	    	<tr>
+		      	<th>ID</th>
+		      	<th>喜欢/不喜欢</th>
+		      	<th>用户名</th>
+		      	<th>影片名称</th>
+		      	<th>星级</th>
+		      	<th>影片ID</th>
+	    	</tr>
+	  	</thead>
+		<tbody>
+		 <% likes.forEach(function(like){ %>
+			<tr>
+	    		<td><%=  like.id %></td>
+	    		<% if(like.iLike == 1) { %>
+	    			<td>喜欢</td>
+	    		<% } else{ %>
+	    			<td>不喜欢</td>
+	    		<% } %>
+	    		<td><%=  like.userName %></td>
+	    		<td><%=  like.videoName %></td>
+	    		<td><%=  like.star %></td>
+	    		<td><%=  like.uid %></td>
+	    	</tr>
+		 <% }) %>
+		</tbody>
+	</table>
+
+<% include footer %>          

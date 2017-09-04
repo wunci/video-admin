@@ -1,0 +1,28 @@
+<% include header %>
+	
+	<table class="ui striped table">
+	 	<thead>
+	    	<tr>
+		      	<th>ID</th>
+		      	<th>用户名</th>
+		      	<th>日期</th>
+		      	<th>内容</th>
+		      	<th>影片名称</th>
+		      	<th>影片id</th>
+	    	</tr>
+	  	</thead>
+		<tbody>
+		 <% comments.forEach(function(comment){ %>
+			<tr>
+	    		<td><%=  comment.id %></td>
+	    		<td><%=  comment.userName %></td>
+	    		<td><%=  comment.date %></td>
+	    		<td><%=  comment.content %></td>
+	    		<td><%=  comment.videoName %></td>
+	    		<td><%=  comment.uid %></td>
+	    	</tr>
+		 <% }) %>
+		</tbody>
+	</table>
+
+<% include footer %>          

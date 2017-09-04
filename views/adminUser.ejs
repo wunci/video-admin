@@ -1,0 +1,20 @@
+<% include header %>
+
+	<table class="ui striped table">
+	 	<thead>
+	    	<tr>
+		      	<th>ID</th>
+		      	<th>用户名</th>
+	    	</tr>
+	  	</thead>
+		<tbody>
+		 <% users.forEach(function(user){ %>
+			<tr>
+	    		<td><%=  user.id %></td>
+	    		<td><%=  user.username %></td>
+	    	</tr>
+		 <% }) %>
+		</tbody>
+	</table>
+
+<% include footer %>          

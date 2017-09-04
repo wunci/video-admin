@@ -1,0 +1,121 @@
+<% include header %>
+
+<form class="ui form segment" method="post"  enctype='multipart/form-data' style="width: 60%;margin:0 auto 40px">
+  <div class="field">
+    <label>影视名称</label>
+    <input type="text" name="video-name" placeholder="影视名称" value="<%= video.name %>">
+  </div>
+  <div class="fields equal width">
+    <div class="field">
+      <label>影视国家</label>
+      <select class="ui fluid search dropdown" name="video-country">
+        <option value="">影视国家</option>
+        <option value="中国">中国</option>
+        <option value="美国">美国</option>
+        <option value="英国">英国</option>
+        <option value="法国">法国</option>
+        <option value="日本">日本</option>
+        <option value="泰国">泰国</option>
+        <option value="韩国">韩国</option>
+        <option value="印度">印度</option>
+        <option value="其他">其他</option>
+        <option selected value="<%= video.country %>"><%= video.country %></option>
+      </select>
+    </div>
+    <div class="six field">
+      <label>影视分类</label>
+      <select class="ui fluid search dropdown" name="video-classify">
+        <option value="">影视分类</option>
+        <option value="电影">电影</option>
+        <option value="电视剧">电视剧</option>
+        <option value="综艺">综艺</option>
+        <option value="动漫">动漫</option>
+        <option value="纪录片">纪录片</option>
+        <option value="其他">其他</option>
+        <option selected value="<%= video.classify %>"><%= video.classify %></option>
+      </select>
+    </div>
+    <div class="field">
+      <label>影视时间</label>
+      <input type="date" name="video-time" placeholder="影视时间"  value="<%= video.time1 %>">
+    </div>
+  </div>
+ 
+  <div class="fields">
+    <div class="field">
+     <label>影视图片</label>
+     <input type="file" name="file" multiple>
+    </div>
+  </div>
+  <div class="fields equal width">
+    <div class="field">
+      <label>影视评分</label>
+      <select class="ui fluid search dropdown" name="video-star">
+        <option value="">影视评分</option>
+        <option value="10.0">10.0</option>
+        <option value="9.0">9.0</option>
+        <option value="8.0">8.0</option>
+        <option value="7.0">7.0</option>
+        <option value="6.0">6.0</option>
+        <option value="5.0">5.0</option>
+        <option value="4.0">4.0</option>
+        <option value="3.0">3.0</option>
+        <option value="2.0">2.0</option>
+        <option value="1.0">1.0</option>
+        <option selected value="<%= video.star %>"><%= video.star %></option>
+      </select>
+    </div>
+    <div class="field">
+      <label>影视时长(分钟/季)</label>
+      <input type="text" name="video-time-long" placeholder="影视时长"  value="<%= video.timelong %>">
+    </div>
+    <div class="field">
+      <label>影视类型</label>
+      <select class="ui fluid search dropdown" name="video-type">
+        <option value="">影视类型</option>
+        <option value="动作">动作</option>
+        <option value="喜剧">喜剧</option>
+        <option value="爱情">爱情</option>
+        <option value="剧情">剧情</option>
+        <option value="古装">古装</option>
+        <option value="历史">历史</option>
+        <option value="战争">战争</option>
+        <option value="科幻">科幻</option>
+        <option value="惊悚">惊悚</option>
+        <option value="恐怖">恐怖</option>
+        <option value="冒险">冒险</option>
+        <option value="纪录片">纪录片</option>
+        <option value="武侠">武侠</option>
+        <option value="动画">动画</option>
+        <option value="犯罪">犯罪</option>
+        <option value="脱口秀">脱口秀</option>
+        <option value="成人">成人</option>
+        <option value="儿童">儿童</option>
+        <option selected value="<%= video.type %>"><%= video.type %></option>
+      </select>
+    </div>
+  </div>
+  <div class=" fields">
+  </div>
+  <div class="field">
+    <div class="field">
+      <label>影视导演/演员</label>
+      <input type="text" name="video-actors" placeholder="影视导演/演员"  value="<%= video.actors %>">
+    </div>
+  </div>
+  <div class="field">
+    <label>影视描述</label>
+   <textarea placeholder="影视描述" name="video-detail"><%= video.detail %></textarea>
+  </div>
+   <button class="ui button" type="submit">Submit</button>
+  <!-- <div class="ui submit button">Submit</div> -->
+  
+</form>
+
+
+
+<script src="../js/wclimb.js"></script> 
+<script>
+  $('.ui.dropdown').dropdown()
+</script>
+<% include footer %>   

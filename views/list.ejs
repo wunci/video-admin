@@ -1,0 +1,65 @@
+<% include header %>
+	<style>
+		.ui.table thead th{
+			white-space: nowrap;
+		}
+	</style>
+	<table class="ui striped table">
+	  <thead>
+	    <tr>
+	      <th>影视名称</th>
+	      <th>影视国家</th>
+	      <th>影视分类</th>
+	      <th>影视时间</th>
+	      <th>影视图片</th>
+	      <th>影视评分</th>
+	      <th>影视时长</th>
+	      <th>影视类型</th>
+	      <th>影视导演/演员</th>
+	      <th>影视描述</th>
+	      <th>编辑</th>
+	      <th>删除</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	  <% videos.forEach(function(video){ %>
+	    <tr>
+	    	<td><%=  video.name %></td>
+	    	<td><%=  video.country %></td>
+	    	<td><%=  video.classify %></td>
+			<td><%=  video.time1 %></td>
+			<td><img src="./images/<%= video.img %>" alt=""></td>
+			<td><%=  video.star %></td>
+			<td><%=  video.timelong %></td>
+			<td><%=  video.type %></td>
+			<td><%=  video.actors %></td>
+			<td><%=  video.detail %></td>
+			<td><a href="/edit/<%= video.id %>"><button class="ui primary button">Edit </button></a></td>
+			<td>
+				<button v-id="<%= video.id %>" class="ui primary button delete">Delete </button>
+			</td>
+	    </tr>
+	    <% }) %>
+	  </tbody>
+	</table>
+	
+		
+	
+	<script>
+	$('.ui.dropdown').dropdown()
+		$(function(){
+			$('.delete').click((e)=>{
+				console.log(e.target.getAttribute('v-id'))
+				$.ajax({
+					url:'/delete/'+e.target.getAttribute('v-id'),
+					type:'POST',
+					success:function(res){
+						if (res==='success') {
+							window.location.reload()
+						}
+					}	
+				})
+			})
+		})
+	</script>
+<% include footer %>          

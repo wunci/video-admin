@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>wclimb管理后台</title>
+	<link rel="icon" href="http://www.wclimb.site/images/avatar.png">
+	<link href="http://cdn.bootcss.com/semantic-ui/2.2.13/semantic.min.css" rel="stylesheet">
+</head>
+  <script src="http://cdn.bootcss.com/jquery/3.0.0-alpha1/jquery.min.js"></script>
+  <script src="http://cdn.bootcss.com/semantic-ui/2.2.13/semantic.min.js"></script>
+<body>
+	<style>
+		img{
+			width: 50px;
+		}
+		.right .item {
+			margin: 0 -0.5em!important;
+		}
+		th,td{
+			text-align: center!important;
+		}
+	</style>
+	<div class="ui inverted segment"  style="margin-top: 0;">
+	    <div class="ui inverted secondary menu">
+	    	<a class="item"  href="/">Home</a>
+	    	<a class="item" href="/upload">上传数据</a>
+	    	<a class="item" href="/adminUser">后台管理员列表</a>
+	    	<a class="item" href="/mobileUser">手机用户列表</a>
+	    	<a class="item" href="/comment">用户评论</a>
+	    	<a class="item" href="/like">喜欢/不喜欢</a>
+	    	<a target="__blank" href="https://github.com/wclimb" class="item">GitHub</a>
+		  	<div class="right menu">
+				<div class="ui item dropdown">
+			    	<div class="text">
+			    		<% if(session.user){ %>
+			    	  	<img class="ui avatar image" src="http://www.wclimb.site/images/avatar.png">
+			    	  	<%= session.user %>
+			    	   	<% } %>
+			    	</div>
+			    	<i class="dropdown icon"></i>
+				    <div class="menu">
+				    	<div class="header">
+						    登出操作
+						    </div>
+						    <% if(session.user){ %>
+				    	  <a class="item" href="/signout">
+						    	登出
+						    </a>
+				    	   <% } %>
+				    	</div>
+				   </div>
+		  		</div>
+	  		</div>
+		</div>
+	</div>

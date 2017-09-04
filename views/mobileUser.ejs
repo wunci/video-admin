@@ -1,0 +1,28 @@
+<% include header %>
+	
+	<table class="ui striped table">
+	 	<thead>
+	    	<tr>
+		      	<th>ID</th>
+		      	<th>用户名</th>
+		      	<th>头像</th>
+	    	</tr>
+	  	</thead>
+		<tbody>
+		 <% users.forEach(function(user){ %>
+			<tr>
+	    		<td><%=  user.id %></td>
+	    		<td><%=  user.userName %></td>
+	    		<td>
+	    			<% if(user.avator!=''){ %>
+	    				<img src="http://vue.wclimb.site/images/avator/<%=  user.avator %>.png" alt="">
+	    			<% }else{ %>
+	    				还没有上传头像！
+	    			<% } %>
+	    		</td>
+	    	</tr>
+		 <% }) %>
+		</tbody>
+	</table>
+
+<% include footer %>          
