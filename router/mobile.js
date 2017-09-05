@@ -6,9 +6,9 @@ var fs = require('fs')
 
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
-    // ctx.set('Cache-Control', 'no-cache');
+
     ctx.set('Access-Control-Allow-Origin', '*');
-   
+
     await Promise.all([
             apiModel.findDataByCls('电影'),
             apiModel.findDataByCls('电视剧'),
@@ -22,9 +22,10 @@ router.get('/vi/list', async(ctx, next) => {
  
 // 获取单个id的信息
 router.get('/vi/:id',async(ctx) => {
+
     ctx.set('Access-Control-Allow-Origin', '*');
+
     var id = ctx.params.id
-     
     await Promise.all([
             apiModel.getDataById(id),
             apiModel.getLikeStar(1,id),
@@ -46,7 +47,9 @@ router.get('/vi/:id/comment',async(ctx) => {
 
 // 获取用户的评论
 router.get('/vi/comment/user',async(ctx) => {
+
     ctx.set('Access-Control-Allow-Origin', '*');
+
     var name = ctx.querystring.split('=')[1]
     console.log(name)
     await apiModel.getCommentByUser(decodeURIComponent(name))
@@ -108,8 +111,9 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
             var data = JSON.parse(JSON.stringify(res))
             var newStar = (data[0].length / data[1].length * 10).toFixed(1)
             console.log('newStar',newStar)
-            console.log(data)
-            apiModel.updateStar([newStar,uid])
+            // console.log(data)
+            apiModel.updateVideoStar([newStar,uid])
+            apiModel.updateLikeStar([newStar,uid])
         })
         
         
@@ -118,6 +122,7 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
 router.get('/vi/:id/like',async(ctx) => {
 
     ctx.set('Access-Control-Allow-Origin', '*');
+    
     var name = decodeURIComponent(ctx.querystring.split('=')[1])
     var uid = ctx.params.id;
     // console.log(data)
@@ -149,7 +154,6 @@ router.post('/vi/signin', koaBody(), async(ctx,next)=>{
     
     data = JSON.parse(ctx.request.body)
     console.log( JSON.parse(ctx.request.body))
-  
     var name = data.userName
     var pass = data.password;
     console.log('name',name)
@@ -234,7 +238,7 @@ router.get('/vi/yzm/img',async(ctx,next)=>{
     const { token, buffer } = await captcha({ size: 4})
     console.log(token, buffer)
     fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {
-       
+
     }).end(buffer)
     console.log(token)
     ctx.body = token

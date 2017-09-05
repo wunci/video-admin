@@ -110,8 +110,7 @@ router.post('/edit/:id', koaBody({
     }
 }), async(ctx, next) => {
     var i_body = JSON.parse(JSON.stringify(ctx.request.body))
-    var fields = i_body['fields']
-        
+    var fields = i_body['fields'] 
     var name = fields['video-name']
     var country = fields['video-country']
     var classify = fields['video-classify']
@@ -138,7 +137,6 @@ router.post('/edit/:id', koaBody({
                 ctx.redirect('/')
             })
     }
-
 })
 // 删除
 router.post('/delete/:id', koaBody(), async(ctx, next) => {
