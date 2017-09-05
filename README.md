@@ -35,6 +35,29 @@ supervisor --harmony index (运行项目)
 
 > 如果觉得对你有帮助还望关注一下，有问题可以即使提哟，觉得不错的话`star`一下也是可以的哟
 
+## 后端管理后台功能
+
+- [x] 注册
+- [x] 登录
+- [x] 登出
+- [x] 上传video信息
+- [x] 修改已上传的video信息
+- [x] 查看喜欢/不喜欢的所有数据
+- [x] 查看评论的所有数据
+- [x] 查看评论的所有数据
+- [x] 查看后台所有用户
+- [x] 查看前端注册的所有用户
+
+## 后端线上地址
+
+技术栈：`node` + `koa2` + `mysql` 
+预览：[video-admin](http://vue.wclimb.site)
+GitHub: [管理后台](https://github.com/wclimb/video-admin)
+
+## 前端后台演示
+
+![](http://oswpupqu5.bkt.clouddn.com/admin.gif)
+
 ## 前端功能
 
 * 1. 注册登录登出 + 验证码 密码检测，如果用户不存在则自动创建
@@ -47,18 +70,23 @@ supervisor --harmony index (运行项目)
 * 8. 搜索功能，可以搜索存在的影片，如果没有则显示无结果
 * 9. 自己喜欢的video和评论的内容会在个人中心显示
 
-综上：`注册` + `登录` + `登出` + `评分` + `修改用户名` + `上传头像` + `评论` + `搜索` 
+综上：
+
+- [x] 注册
+- [x] 登录
+- [x] 登出
+- [x] 验证码
+- [x] 详情页
+- [x] 分类
+- [x] 分类影视列表
+- [x] 修改用户名
+- [x] 上传头像
+- [x] 评论
+- [x] 删除评论
+- [x] 搜索
+- [x] 个人中心数据
 
 
-## 后端线上地址
-
-技术栈：`node` + `koa2` + `mysql` 
-预览：[video-admin](http://vue.wclimb.site)
-GitHub: [管理后台](https://github.com/wclimb/video-admin)
-
-## 前端后台演示
-
-![](http://oswpupqu5.bkt.clouddn.com/admin.gif)
 
 
 
