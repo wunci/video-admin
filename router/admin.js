@@ -132,10 +132,15 @@ router.post('/edit/:id', koaBody({
             })
 
     } else {
-        await apiModel.updateDataHasImg(data)
+       await Promise.all([
+                apiModel.updateDataHasImg(data),
+                apiModel.updateLikesImg([img.match(/\w+/g)[2],ctx.params.id])
+            ])
             .then(() => {
+                console.log('更新成功')
                 ctx.redirect('/')
             })
+         
     }
 })
 // 删除
