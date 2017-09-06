@@ -114,6 +114,8 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
             // console.log(data)
             apiModel.updateVideoStar([newStar,uid])
             apiModel.updateLikeStar([newStar,uid])
+        }).then(res => {
+            ctx.body = res
         })
         
         
