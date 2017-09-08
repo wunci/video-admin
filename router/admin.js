@@ -61,6 +61,9 @@ router.get('/upload', async(ctx, next) => {
 // 上传video数据 post
 router.post('/upload', koaBody({
     multipart: true,
+    "formLimit":"5mb",
+    "jsonLimit":"5mb",
+    "textLimit":"5mb",
     formidable: {
         uploadDir: './public/images'
     }
@@ -105,6 +108,9 @@ router.get('/edit/:id', async(ctx, next) => {
 // 编辑 post
 router.post('/edit/:id', koaBody({
     multipart: true,
+    "formLimit":"5mb",
+    "jsonLimit":"5mb",
+    "textLimit":"5mb",
     formidable: {
         uploadDir: './public/images'
     }
