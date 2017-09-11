@@ -203,6 +203,16 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
             })    
     }            
 })
+// 获取用户头像
+router.get('/vi/avator/list',koaBody(),async(ctx)=>{
+    ctx.set('Access-Control-Allow-Origin', '*');
+    var name = decodeURIComponent(ctx.querystring.split('=')[1]);
+    await apiModel.findMobileUserByName(name)
+        .then(res=>{
+            ctx.body = res
+        })
+
+})
 // 增加头像
 router.post('/vi/avator',koaBody({
     "formLimit":"5mb",
