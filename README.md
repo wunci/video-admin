@@ -36,6 +36,7 @@ npm i supervisor -g(安装过可以忽略)
 
 supervisor --harmony index (运行项目)
 
+ps: 需要先创建数据库，本项目的数据库名为 vuesql 不知道如何创建的可以看我另外一个项目Koa2-blog的README.md
 ```
 
 > 如果觉得对你有帮助还望关注一下，有问题可以及时提哟，觉得不错的话star一下也是可以的哟
