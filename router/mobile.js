@@ -62,7 +62,14 @@ router.post('/vi/:id/comment', koaBody(),async(ctx) => {
 
     ctx.set('Access-Control-Allow-Origin', '*');
 
-    var data = JSON.parse(ctx.request.body)
+    var data;
+    var requestBody = ctx.request.body;
+    if(typeof requestBody === 'string'){
+        data = JSON.parse(requestBody)
+    }
+    else if(typeof requestBody === 'object'){
+        data = requestBody
+    }
     var name = data.userName
     var date = data.date;
     var content = data.content;
@@ -90,7 +97,14 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
 
     ctx.set('Access-Control-Allow-Origin', '*');
 
-    var data = JSON.parse(ctx.request.body)
+    var data;
+    var requestBody = ctx.request.body;
+    if(typeof requestBody === 'string'){
+        data = JSON.parse(requestBody)
+    }
+    else if(typeof requestBody === 'object'){
+        data = requestBody
+    }
     var name = data.userName
     var like = data.like;
     var videoName = data.videoName;
@@ -154,8 +168,14 @@ router.get('/vi/like/list',async(ctx) => {
 router.post('/vi/signin', koaBody(), async(ctx,next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
     
-    data = JSON.parse(ctx.request.body)
-    console.log( JSON.parse(ctx.request.body))
+    var data;
+    var requestBody = ctx.request.body;
+    if(typeof requestBody === 'string'){
+        data = JSON.parse(requestBody)
+    }
+    else if(typeof requestBody === 'object'){
+        data = requestBody
+    }
     var name = data.userName
     var pass = data.password;
     console.log('name',name)
@@ -177,7 +197,14 @@ router.post('/vi/signin', koaBody(), async(ctx,next)=>{
 router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
     var oldName = decodeURIComponent(ctx.querystring.split('=')[1])
-    var data = JSON.parse(ctx.request.body);
+    var data;
+    var requestBody = ctx.request.body;
+    if(typeof requestBody === 'string'){
+        data = JSON.parse(requestBody)
+    }
+    else if(typeof requestBody === 'object'){
+        data = requestBody
+    }
     var newName = data.newName;
     var userExist = false;
     await apiModel.findMobileUserByName(newName)
@@ -220,7 +247,14 @@ router.post('/vi/avator',koaBody({
     "textLimit":"5mb"
 }),async(ctx)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
-    var data = JSON.parse(ctx.request.body);
+    var data;
+    var requestBody = ctx.request.body;
+    if(typeof requestBody === 'string'){
+        data = JSON.parse(requestBody)
+    }
+    else if(typeof requestBody === 'object'){
+        data = requestBody
+    }
     var name = decodeURIComponent(ctx.querystring.split('=')[1])
     var avator = data.avator;
     var base64Data = avator.replace(/^data:image\/\w+;base64,/, "");
