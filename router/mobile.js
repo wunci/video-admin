@@ -260,7 +260,7 @@ router.post('/vi/avator',koaBody({
     var base64Data = avator.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = new Buffer(base64Data, 'base64');
     function random(){
-     return Number(Math.random().toString().substr(3) + Date.now()).toString(36)
+     return Number(Math.random().toString().substr(3)).toString(36) + Date.now()
     }
     var getTime = random() 
     await fs.writeFile('./public/images/avator/'+getTime +'.png', dataBuffer,err=>{
