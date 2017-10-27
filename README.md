@@ -34,7 +34,9 @@ npm install  建议使用淘宝镜像(https://npm.taobao.org/) =>  cnpm i
 
 npm i supervisor -g(安装过可以忽略)
 
-supervisor --harmony index (运行项目)
+npm run dev (运行项目)
+
+npm test (测试)
 
 ps: 需要先创建数据库，本项目的数据库名为 vuesql 不知道如何创建的可以看我另外一个项目Koa2-blog的README.md
 ```

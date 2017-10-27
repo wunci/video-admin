@@ -37,6 +37,10 @@ app.use(require('./router/mobile.js').routes())
 
 app.use(koaBody({ multipart: true,formidable:{uploadDir: path.join(__dirname,'./public/images')}}));
 
-app.listen(8000)
+if (module.parent) {
+  module.exports = app;
+}else{
+	app.listen(8000)
+}
 
 console.log('listen in 8000')
