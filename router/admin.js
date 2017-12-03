@@ -128,8 +128,9 @@ router.post('/edit/:id', koaBody({
     var actors = fields['video-actors']
     var detail = fields['video-detail']
     var data = [name, country, classify, time1, img.match(/\w+/g)[2], star, timelong, type, actors, detail, ctx.params.id];
-
-    await apiModel.updateLikeName([name,ctx.params.id]) 
+    // 更改影片信息，喜欢和评论的列表也要相应更新，比如videName
+    await apiModel.updateLikeName([name, ctx.params.id]) 
+    await apiModel.updateCommentName([name,ctx.params.id]) 
     if (i_body['files']['file']['size'] == 0) {
         dataNoneImg = [name, country, classify, time1, star, timelong, type, actors, detail, ctx.params.id];
         await apiModel.updateDataNoneImg(dataNoneImg)
