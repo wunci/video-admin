@@ -15,7 +15,6 @@ router.get('/vi/list', async(ctx, next) => {
             apiModel.findDataByCls('综艺'),
             apiModel.findData('videos')
         ]).then(res => {
-            
             ctx.body = res
         })
 })
