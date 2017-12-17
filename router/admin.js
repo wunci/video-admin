@@ -6,14 +6,26 @@ var checkLogin = require('../middlewares/check.js').checkLogin
 var fs = require('fs')
 
 router.get('/', async(ctx, next) => {
+    var page
+    let dataLength = ''
+    //console.log(ctx.querystring)
+    if (ctx.querystring == '') {
+        page = 1
+    }else{
+        page = ctx.querystring.split('=')[1];
+    }
     await checkLogin(ctx)
-    await apiModel.findData('videos')
-        .then((res) => {
-            data = JSON.parse(JSON.stringify(res))
-        })
+    await apiModel.findData('videos').then(res => {
+        dataLength = res.length
+    })
+    await apiModel.findPageData('videos', page, 10).then(res => {
+        data = JSON.parse(JSON.stringify(res))
+    })
     await ctx.render('list', {
         videos: data,
-        session: ctx.session
+        session: ctx.session,
+        dataLength: Math.ceil(dataLength/10),
+        nowPage: page
     })
 })
 // 获取登录页面
@@ -164,42 +176,70 @@ router.post('/delete/:id', koaBody(), async(ctx, next) => {
 
 // 后台管理员列表
 router.get('/adminUser',async(ctx,next)=>{
-    await apiModel.findData('users').then(res=>{
+    const page = ctx.querystring.split('=')[1];
+    let dataLength = ''
+    await apiModel.findData('users').then(res => {
+        dataLength = res.length
+    })
+    await apiModel.findPageData('users', page, 25).then(res => {
         data = res
     })
-    await ctx.render('adminUser',{
-        users:data,
-        session:ctx.session
+    await ctx.render('adminUser', {
+        users: data,
+        session: ctx.session,
+        dataLength: Math.ceil(dataLength/25),
+        nowPage: page
     })
 })
 // 手机端用户列表
 router.get('/mobileUser',async(ctx,next)=>{
-    await apiModel.findData('mobileusers').then(res=>{
+    const page = ctx.querystring.split('=')[1];
+    let dataLength = ''
+    await apiModel.findData('mobileusers').then(res => {
+        dataLength = res.length
+    })
+    await apiModel.findPageData('mobileusers',page,15).then(res=>{
         data = res
     })
     await ctx.render('mobileUser',{
         users:data,
-        session:ctx.session
+        session:ctx.session,
+        dataLength: Math.ceil(dataLength/15),
+        nowPage: page
     })
 })
 // 手机端评论列表
 router.get('/comment',async(ctx,next)=>{
-    await apiModel.findData('comments').then(res=>{
+    const page = ctx.querystring.split('=')[1];
+    let dataLength = ''
+    await apiModel.findData('comments').then(res => {
+        dataLength = res.length
+    })
+    await apiModel.findPageData('comments', page, 25).then(res => {
         data = res
     })
-    await ctx.render('comments',{
-        comments:data,
-        session:ctx.session
+    await ctx.render('comments', {
+        comments: data,
+        session: ctx.session,
+        dataLength: Math.ceil(dataLength/25),
+        nowPage: page
     })
 })
 // 手机端like列表
 router.get('/like',async(ctx,next)=>{
-    await apiModel.findData('likes').then(res=>{
+    const page = ctx.querystring.split('=')[1];
+    let dataLength = ''
+    await apiModel.findData('likes').then(res => {
+        dataLength = res.length
+    })
+    await apiModel.findPageData('likes', page, 25).then(res => {
         data = res
     })
-    await ctx.render('likes',{
-        likes:data,
-        session:ctx.session
+    await ctx.render('likes', {
+        likes: data,
+        session: ctx.session,
+        dataLength: Math.ceil(dataLength/25),
+        nowPage: page
     })
 })
 module.exports = router

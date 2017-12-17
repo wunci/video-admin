@@ -24,5 +24,17 @@
 		 <% }) %>
 		</tbody>
 	</table>
-
+	<div id="page">
+		<% for(var i = 1; i <= dataLength ; i++ ){ %>
+			<% if( nowPage == i){ %>
+			<a class="active" href="/mobileUser?page=<%= i %>">
+				<%= i %>
+			</a>
+			<% }else{ %>
+			<a  href="/mobileUser?page=<%= i %>">
+				<%= i %>
+			</a>
+			<% } %>
+		<% } %>
+	</div>
 <% include footer %>          

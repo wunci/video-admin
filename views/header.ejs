@@ -5,10 +5,8 @@
 	<title>wclimb管理后台</title>
 	<link rel="icon" href="http://www.wclimb.site/images/avatar.png">
 	<link href="http://cdn.bootcss.com/semantic-ui/2.2.13/semantic.min.css" rel="stylesheet">
-</head>
-  <script src="http://cdn.bootcss.com/jquery/3.0.0-alpha1/jquery.min.js"></script>
-  <script src="http://cdn.bootcss.com/semantic-ui/2.2.13/semantic.min.js"></script>
-<body>
+	<script src="http://cdn.bootcss.com/jquery/3.0.0-alpha1/jquery.min.js"></script>
+	<script src="http://cdn.bootcss.com/semantic-ui/2.2.13/semantic.min.js"></script>
 	<style>
 		img{
 			width: 50px;
@@ -19,15 +17,37 @@
 		th,td{
 			text-align: center!important;
 		}
+		#page{
+			display: table;
+			margin: 20px auto;
+		}
+		#page a{
+			padding: 5px 10px;
+			border:1px solid #ddd;
+			color: #428bca;
+			margin: 0 2px;
+			border-radius: 4px;
+		}
+		#page a:hover{
+			background: #428bca;
+			color: #fff;
+			
+		}
+		#page a.active{
+			background: #428bca;
+			color: #fff;
+		}
 	</style>
+</head>
+<body>
 	<div class="ui inverted segment"  style="margin-top: 0;">
 	    <div class="ui inverted secondary menu">
 	    	<a class="item"  href="/">Home</a>
 	    	<a class="item" href="/upload">上传数据</a>
-	    	<a class="item" href="/adminUser">后台管理员列表</a>
-	    	<a class="item" href="/mobileUser">手机用户列表</a>
-	    	<a class="item" href="/comment">用户评论</a>
-	    	<a class="item" href="/like">喜欢/不喜欢</a>
+	    	<a class="item" href="/adminUser?page=1">后台管理员列表</a>
+	    	<a class="item" href="/mobileUser?page=1">手机用户列表</a>
+	    	<a class="item" href="/comment?page=1">用户评论</a>
+	    	<a class="item" href="/like?page=1">喜欢/不喜欢</a>
 	    	<a target="__blank" href="https://github.com/wclimb" class="item">GitHub</a>
 		  	<div class="right menu">
 				<div class="ui item dropdown">
