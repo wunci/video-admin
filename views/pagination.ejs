@@ -1,0 +1,30 @@
+<div id="page">
+	<% if(dataLength == 0 ){ %>
+		<p>现在还没有数据，赶快去添加吧！</p>
+	<% }else{ %>
+		<% min =  nowPage - 2 < 1 ? 1 : nowPage - 2 %>
+		<% max =  nowPage + 2 > dataLength ? dataLength : nowPage + 2 %>
+		<% if(nowPage != 1) { %>
+			<a href="/<%= type %>?page=<%= 1 %>">首页</a>
+			<a href="/<%= type %>?page=<%= nowPage-1 %>">上一页</a>
+		<% } %>
+		<% for(var i = min ; i <= max ; i++ ){ %>
+			<% if( nowPage == i){ %>
+				<a class="active" href="/<%= type %>?page=<%= i %>">
+					<%= i %>
+				</a>
+				<% }else{ %>
+				<a href="/<%= type %>?page=<%= i %>">
+					<%= i %>
+				</a>
+			<% } %>
+		<% } %>
+		<% if(nowPage != dataLength) { %>
+		<a href="/<%= type %>?page=<%= nowPage+1 %>">下一页</a>
+		<a href="/<%= type %>?page=<%= dataLength %>">尾页</a>
+		<% } %>
+		<% if(dataLength > 0 ){ %>
+			<span>共<%= dataLength %>页</span>	
+		<% } %>
+	<% } %>
+</div>
