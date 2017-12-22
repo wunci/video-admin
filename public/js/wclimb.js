@@ -46,6 +46,15 @@ $(function(){
           }
         ]
       },
+      file: {
+        identifier: 'file',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : '请上传图片！'
+          }
+        ]
+      },
       star: {
         identifier: 'video-star',
         rules: [
