@@ -3,7 +3,7 @@ var apiModel = require('../lib/sql.js')
 var path = require('path')
 var koaBody = require('koa-body')
 var fs = require('fs')
-
+var moment = require('moment')
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
 
@@ -70,7 +70,7 @@ router.post('/vi/:id/comment', koaBody(),async(ctx) => {
         data = requestBody
     }
     var name = data.userName
-    var date = data.date;
+    var date = moment().format('YYYY-MM-DD HH:mm:ss');
     var content = data.content;
     var videoName = data.videoName;
     var avator = data.avator;
@@ -177,20 +177,56 @@ router.post('/vi/signin', koaBody(), async(ctx,next)=>{
     }
     var name = data.userName
     var pass = data.password;
-    console.log('name',name)
+    //console.log('name',name)
     await apiModel.findMobileUserByName(name)
         .then(res => {
             console.log('res',res)
             var res = JSON.parse(JSON.stringify(res))
             if (res[0]['userName'] === name && res[0]['password'] === pass) {
-               ctx.body = 'allTrue,'+res[0]['avator']
+               ctx.body = {
+                   msg: 'allTrue' ,
+                   avator: res[0]['avator'],
+                   token: res[0]['token']
+               }
             }else{
-                ctx.body = 'passwordFalse'
+                ctx.body = {
+                    msg: 'passwordFalse'
+                }
             }
         }).catch(() => {
-            ctx.body =  'newUser'  
-            apiModel.addMobileUser([name, pass])
+            function random() {
+                return Number(Math.random().toString().substr(3)).toString(36)
+            }
+            let token = name + '&' + random() + '&' + moment().format('YYYY/MM/DD-HH:mm:ss') + '&' + new Date().getTime()
+            ctx.body =  {
+                msg: 'newUser',
+                token: token
+            }  
+            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm'),token])
         })
+})
+// 检测用户登录信息的有效性
+router.post('/vi/checkUser',koaBody(),async(ctx,next)=>{
+    ctx.set('Access-Control-Allow-Origin', '*');
+    var requestBody = ctx.request.body;
+    if (typeof requestBody === 'string') {
+        data = JSON.parse(requestBody)
+    }
+    else if (typeof requestBody === 'object') {
+        data = requestBody
+    }
+    //console.log(data.userName)
+    await apiModel.checkUser([data.userName])
+            .then(res=>{
+                //console.log(res[0].token)
+                if (res[0].token === data.token) {
+                    ctx.body = 'success'
+                }else{
+                    ctx.body = 'error'
+                }
+            }).catch(err=>{
+                ctx.body = 'error'
+            })
 })
 // 修改用户名
 router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
@@ -208,7 +244,7 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
     var userExist = false;
     await apiModel.findMobileUserByName(newName)
             .then(res=>{
-                console.log('res',res) 
+                //console.log('res',res) 
                 if (res.length == 0) {
                    ctx.body = 'notRepeatName';
                    userExist = true;
@@ -235,7 +271,14 @@ router.get('/vi/avator/list',koaBody(),async(ctx)=>{
     var name = decodeURIComponent(ctx.querystring.split('=')[1]);
     await apiModel.findMobileUserByName(name)
         .then(res=>{
-            ctx.body = res
+            console.log('res',res)
+            if (res.length >=1) {
+                ctx.body = res[0]['avator']
+            }else{
+                ctx.body = 'none'
+            }
+        }).catch(err=>{
+            ctx.body = 'none'
         })
 
 })
@@ -281,7 +324,7 @@ router.get('/vi/yzm/img',async(ctx,next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
     const captcha = require('trek-captcha')
     const { token, buffer } = await captcha({ size: 4})
-    console.log(token, buffer)
+    //console.log(token, buffer)
     fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {
 
     }).end(buffer)

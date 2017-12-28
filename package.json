@@ -25,6 +25,7 @@
     "mysql": "^2.14.1"
   },
   "dependencies": {
+    "moment": "^2.20.1",
     "trek-captcha": "^0.3.0"
   }
 }

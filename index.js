@@ -40,7 +40,7 @@ app.use(koaBody({ multipart: true,formidable:{uploadDir: path.join(__dirname,'./
 if (module.parent) {
   module.exports = app;
 }else{
-	app.listen(8000)
+	app.listen(3000)
 }
 
-console.log('listen in 8000')
+console.log('listen in 3000')
