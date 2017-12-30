@@ -50,7 +50,7 @@ router.get('/vi/comment/user',async(ctx) => {
     ctx.set('Access-Control-Allow-Origin', '*');
 
     var name = ctx.querystring.split('=')[1]
-    console.log(name)
+    console.log('name',name)
     await apiModel.getCommentByUser(decodeURIComponent(name))
         .then(res => {
             ctx.body = res
@@ -75,7 +75,6 @@ router.post('/vi/:id/comment', koaBody(),async(ctx) => {
     var videoName = data.videoName;
     var avator = data.avator;
     var uid = ctx.params.id;
-    console.log(data)
     await apiModel.addComment([name, date, content,videoName, uid,avator])
         .then(res => {
             ctx.body = 'success'
@@ -111,7 +110,6 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
     var star = data.star;
     var uid = ctx.params.id;
     var newStar
-    console.log(data)
     await apiModel.addLike([like, name, videoName, videoImg, star , uid])
         .then(res => {
             ctx.body = 'success'
@@ -121,10 +119,9 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
             apiModel.getLikeStar(1,uid),
             apiModel.getUidLikeLength(uid)
         ]).then(res=>{
-            var data = JSON.parse(JSON.stringify(res))
-            var newStar = (data[0].length / data[1].length * 10).toFixed(1)
+            var newStar = (res[0].length / res[1].length * 10).toFixed(1)
             console.log('newStar',newStar)
-            // console.log(data)
+            // console.log(res)
             apiModel.updateVideoStar([newStar,uid])
             apiModel.updateLikeStar([newStar,uid])
         }).then(res => {
@@ -177,32 +174,31 @@ router.post('/vi/signin', koaBody(), async(ctx,next)=>{
     }
     var name = data.userName
     var pass = data.password;
+    // token5天过期
+    let new_token = name + '&' + Number(Math.random().toString().substr(3)).toString(36) + '&' 
+                    + moment().format('YYYY/MM/DD-HH:mm:ss') + '&' + parseInt(new Date().getTime() + 1000 * 60 * 60 * 24 * 5)
     //console.log('name',name)
     await apiModel.findMobileUserByName(name)
         .then(res => {
-            console.log('res',res)
-            var res = JSON.parse(JSON.stringify(res))
+            console.log('用户信息',res)
             if (res[0]['userName'] === name && res[0]['password'] === pass) {
                ctx.body = {
                    msg: 'allTrue' ,
                    avator: res[0]['avator'],
-                   token: res[0]['token']
+                   token: new_token
                }
+                apiModel.updateToken([new_token,name])               
             }else{
                 ctx.body = {
                     msg: 'passwordFalse'
                 }
             }
         }).catch(() => {
-            function random() {
-                return Number(Math.random().toString().substr(3)).toString(36)
-            }
-            let token = name + '&' + random() + '&' + moment().format('YYYY/MM/DD-HH:mm:ss') + '&' + new Date().getTime()
             ctx.body =  {
                 msg: 'newUser',
-                token: token
+                token: new_token
             }  
-            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm'),token])
+            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm'), new_token])
         })
 })
 // 检测用户登录信息的有效性
@@ -217,9 +213,13 @@ router.post('/vi/checkUser',koaBody(),async(ctx,next)=>{
     }
     //console.log(data.userName)
     await apiModel.checkUser([data.userName])
-            .then(res=>{
-                //console.log(res[0].token)
-                if (res[0].token === data.token) {
+            .then(res => {
+                var user_token = res[0].token;
+                //console.log('token', user_token, data.token, user_token.split('&')[3], new Date().getTime())
+                if (user_token === data.token && user_token.split('&')[3] < new Date().getTime()) {
+                    ctx.body = 'expired'
+                }
+                else if (user_token === data.token) {
                     ctx.body = 'success'
                 }else{
                     ctx.body = 'error'
@@ -253,7 +253,7 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
                 } 
             })
     if (userExist) {
-        await   Promise.all([
+        await Promise.all([
                 apiModel.updateMobileName([newName,oldName]),
                 apiModel.updateMobileCommentName([newName,oldName]),
                 apiModel.updateMobileLikeName([newName,oldName])
@@ -271,10 +271,11 @@ router.get('/vi/avator/list',koaBody(),async(ctx)=>{
     var name = decodeURIComponent(ctx.querystring.split('=')[1]);
     await apiModel.findMobileUserByName(name)
         .then(res=>{
-            console.log('res',res)
+            console.log('avator',res)
             if (res.length >=1) {
                 ctx.body = res[0]['avator']
             }else{
+                // 没有上传头像
                 ctx.body = 'none'
             }
         }).catch(err=>{
@@ -301,22 +302,16 @@ router.post('/vi/avator',koaBody({
     var avator = data.avator;
     var base64Data = avator.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = new Buffer(base64Data, 'base64');
-    function random(){
-     return Number(Math.random().toString().substr(3)).toString(36) + Date.now()
-    }
-    var getTime = random() 
-    await fs.writeFile('./public/images/avator/'+getTime +'.png', dataBuffer,err=>{
-
-    });
+    var getName = Number(Math.random().toString().substr(3)).toString(36) + Date.now()
+    await fs.writeFile('./public/images/avator/'+getName +'.png', dataBuffer,err=>{});
     await Promise.all([
-            apiModel.updateMobileAvator([getTime,name]),
-            apiModel.updateMobileCommentAvator([getTime,name])
-
+            apiModel.updateMobileAvator([getName,name]),
+            apiModel.updateMobileCommentAvator([getName,name])
         ]).then(res=>{
             
         })
      
-    ctx.body = getTime
+    ctx.body = getName
 })
 
 // 验证码
@@ -325,10 +320,8 @@ router.get('/vi/yzm/img',async(ctx,next)=>{
     const captcha = require('trek-captcha')
     const { token, buffer } = await captcha({ size: 4})
     //console.log(token, buffer)
-    fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {
-
-    }).end(buffer)
-    console.log(token)
+    fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {}).end(buffer)
+    console.log('验证码',token)
     ctx.body = token
 })
 
@@ -338,7 +331,7 @@ router.get('/vi/search/result',koaBody(), async(ctx)=>{
     var val = decodeURIComponent(ctx.querystring.split('=')[1])
     console.log(val)
     await apiModel.search(val).then(res=>{
-        console.log(res)
+        console.log('搜索结果',res)
         ctx.body = res
     })
 })

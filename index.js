@@ -8,7 +8,8 @@ const staticCache  = require('koa-static-cache')
 const views = require('koa-views')
 const koaBody = require('koa-body');
 const compress = require('koa-compress')
-const app=new Koa()
+const logger = require('koa-logger')
+const app = new Koa()
 
 const sessionMysqlConfig = {
 	user:config.database.USER,
@@ -16,6 +17,7 @@ const sessionMysqlConfig = {
 	host:config.database.HOST,
 	database:config.database.DATABASE
 }
+app.use(logger())
 app.use(session({
 	key:'USER_SID',
 	store:new MysqlStore(sessionMysqlConfig)
@@ -37,10 +39,6 @@ app.use(require('./router/mobile.js').routes())
 
 app.use(koaBody({ multipart: true,formidable:{uploadDir: path.join(__dirname,'./public/images')}}));
 
-if (module.parent) {
-  module.exports = app;
-}else{
-	app.listen(3000)
-}
+app.listen(3000)
 
 console.log('listen in 3000')
