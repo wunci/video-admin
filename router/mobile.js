@@ -215,8 +215,9 @@ router.post('/vi/checkUser',koaBody(),async(ctx,next)=>{
     await apiModel.checkUser([data.userName])
             .then(res => {
                 var user_token = res[0].token;
+                var tokenInfo = user_token.split('&')
                 //console.log('token', user_token, data.token, user_token.split('&')[3], new Date().getTime())
-                if (user_token === data.token && user_token.split('&')[3] < new Date().getTime()) {
+                if (user_token === data.token && tokenInfo[tokenInfo.length-1] < new Date().getTime()) {
                     ctx.body = 'expired'
                 }
                 else if (user_token === data.token) {
