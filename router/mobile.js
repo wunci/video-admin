@@ -4,11 +4,14 @@ var path = require('path')
 var koaBody = require('koa-body')
 var fs = require('fs')
 var moment = require('moment')
+var md5 = require('md5')
+let checkToken = require('../middlewares/check').checkToken
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
-
+     ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+     ctx.set("Access-Control-Allow-Credentials", true);
+     console.log(ctx.cookies.get('token'))
     await Promise.all([
             apiModel.findDataByCls('电影'),
             apiModel.findDataByCls('电视剧'),
@@ -25,6 +28,7 @@ router.get('/vi/:id',async(ctx) => {
     ctx.set('Access-Control-Allow-Origin', '*');
 
     var id = ctx.params.id
+    console.log('id',id)
     await Promise.all([
             apiModel.getDataById(id),
             apiModel.getLikeStar(1,id),
@@ -59,50 +63,75 @@ router.get('/vi/comment/user',async(ctx) => {
 // 评论
 router.post('/vi/:id/comment', koaBody(),async(ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+    ctx.set("Access-Control-Allow-Credentials", true);
 
-    var data;
-    var requestBody = ctx.request.body;
-    if(typeof requestBody === 'string'){
-        data = JSON.parse(requestBody)
-    }
-    else if(typeof requestBody === 'object'){
-        data = requestBody
-    }
-    var name = data.userName
+    var data = JSON.parse(ctx.request.body);
+
+    var {userName,content,videoName,avator} = data
+
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
-    var content = data.content;
-    var videoName = data.videoName;
-    var avator = data.avator;
     var uid = ctx.params.id;
-    await apiModel.addComment([name, date, content,videoName, uid,avator])
-        .then(res => {
-            ctx.body = 'success'
-        })
+
+    await checkToken(ctx).then(async res=>{
+        console.log(res)
+        await apiModel.addComment([userName, date, content, videoName, uid, avator])
+            .then(res => {
+                console.log(res)
+                 ctx.body = {
+                     code: 200,
+                     message: '评论成功'
+                 }
+            }).catch(err=>{
+                 ctx.body = {
+                     code: 500,
+                     message: '评论失败'
+                 }
+            })
+        
+    }).catch(err=>{
+        console.log(err)
+        ctx.body = err
+        return
+    })
 })
 // 删除评论
 router.post('/vi/delete/comment/:id', koaBody(),async(ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
-
-    await apiModel.deleteComment(ctx.params.id)
-        .then(res => {
-            ctx.body = 'success'
-        })
+    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+    ctx.set("Access-Control-Allow-Credentials", true);
+    await checkToken(ctx).then(async res => {
+        console.log(res)
+        let isSuccess = false
+        await apiModel.deleteComment(ctx.params.id)
+            .then(res => {
+                console.log(res, '删除成功')
+                isSuccess = true
+                ctx.body = {
+                    code: 200,
+                    message: '删除成功'
+                }
+            }).catch(err=>{
+                ctx.body = {
+                    code: 500,
+                    message: '删除失败'
+                }
+            })
+      
+    }).catch(err => {
+        console.log(err)
+        ctx.body = err
+    })
+   
 })
 // like
 router.post('/vi/:id/like', koaBody(),async(ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+    ctx.set("Access-Control-Allow-Credentials", true);
 
-    var data;
-    var requestBody = ctx.request.body;
-    if(typeof requestBody === 'string'){
-        data = JSON.parse(requestBody)
-    }
-    else if(typeof requestBody === 'object'){
-        data = requestBody
-    }
+    var data = JSON.parse(ctx.request.body);
+    
     var name = data.userName
     var like = data.like;
     var videoName = data.videoName;
@@ -110,24 +139,41 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
     var star = data.star;
     var uid = ctx.params.id;
     var newStar
-    await apiModel.addLike([like, name, videoName, videoImg, star , uid])
-        .then(res => {
-            ctx.body = 'success'
-        })
-    // 修改评分
-    await Promise.all([
-            apiModel.getLikeStar(1,uid),
+    await checkToken(ctx).then(async res => {
+        let isDone = false
+        let newStar
+        await apiModel.addLike([like, name, videoName, videoImg, star, uid])
+            .then(res => {
+               isDone = true
+            })
+        // 修改评分
+        await Promise.all([
+            apiModel.getLikeStar(1, uid),
             apiModel.getUidLikeLength(uid)
-        ]).then(res=>{
-            var newStar = (res[0].length / res[1].length * 10).toFixed(1)
-            console.log('newStar',newStar)
-            // console.log(res)
-            apiModel.updateVideoStar([newStar,uid])
-            apiModel.updateLikeStar([newStar,uid])
-        }).then(res => {
-            ctx.body = res
+        ]).then(async res => {
+            newStar = (res[0].length / res[1].length * 10).toFixed(1)
+            console.log('newStar', newStar)
         })
-        
+        await Promise.all([
+            apiModel.updateVideoStar([newStar, uid]),
+            apiModel.updateLikeStar([newStar, uid])
+        ]).then(res=>{
+            ctx.body = {
+                code: 200,
+                message: '评分成功'
+            }
+        }).catch(err=>{
+            ctx.body = {
+                code: 500,
+                message: '评分失败'
+            }
+        })
+       
+    }).catch(err => {
+        console.log(err)
+        ctx.body = err
+    })
+    
         
 })
 // 获取单个video的like信息
@@ -163,108 +209,98 @@ router.get('/vi/like/list',async(ctx) => {
 // 存储手机端的用户信息
 router.post('/vi/signin', koaBody(), async(ctx,next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
-    
-    var data;
-    var requestBody = ctx.request.body;
-    if(typeof requestBody === 'string'){
-        data = JSON.parse(requestBody)
-    }
-    else if(typeof requestBody === 'object'){
-        data = requestBody
-    }
+
+    var data = JSON.parse(ctx.request.body);
     var name = data.userName
     var pass = data.password;
-    // token5天过期
-    let new_token = name + '&' + Number(Math.random().toString().substr(3)).toString(36) + '&' 
-                    + moment().format('YYYY/MM/DD-HH:mm:ss') + '&' + parseInt(new Date().getTime() + 1000 * 60 * 60 * 24 * 5)
+    let token = md5(name +'token'+ pass)
     //console.log('name',name)
     await apiModel.findMobileUserByName(name)
         .then(res => {
             console.log('用户信息',res)
             if (res[0]['userName'] === name && res[0]['password'] === pass) {
                ctx.body = {
-                   msg: 'allTrue' ,
+                   code: 200,
                    avator: res[0]['avator'],
-                   token: new_token
+                   token: token,
+                   message: '登录成功'
                }
-                apiModel.updateToken([new_token,name])               
             }else{
                 ctx.body = {
-                    msg: 'passwordFalse'
+                    code: 500,
+                    message:'用户名或密码错误'
                 }
             }
         }).catch(() => {
             ctx.body =  {
-                msg: 'newUser',
-                token: new_token
+                code: 201,
+                msg: '注册成功',
+                token: token
             }  
-            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm'), new_token])
+            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm')])
         })
-})
-// 检测用户登录信息的有效性
-router.post('/vi/checkUser',koaBody(),async(ctx,next)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
-    var requestBody = ctx.request.body;
-    if (typeof requestBody === 'string') {
-        data = JSON.parse(requestBody)
-    }
-    else if (typeof requestBody === 'object') {
-        data = requestBody
-    }
-    //console.log(data.userName)
-    await apiModel.checkUser([data.userName])
-            .then(res => {
-                var user_token = res[0].token;
-                var tokenInfo = user_token.split('&')
-                //console.log('token', user_token, data.token, user_token.split('&')[3], new Date().getTime())
-                if (user_token === data.token && tokenInfo[tokenInfo.length-1] < new Date().getTime()) {
-                    ctx.body = 'expired'
-                }
-                else if (user_token === data.token) {
-                    ctx.body = 'success'
-                }else{
-                    ctx.body = 'error'
-                }
-            }).catch(err=>{
-                ctx.body = 'error'
-            })
 })
 // 修改用户名
 router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
+
+    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+    ctx.set("Access-Control-Allow-Credentials", true);
+
     var oldName = decodeURIComponent(ctx.querystring.split('=')[1])
-    var data;
-    var requestBody = ctx.request.body;
-    if(typeof requestBody === 'string'){
-        data = JSON.parse(requestBody)
-    }
-    else if(typeof requestBody === 'object'){
-        data = requestBody
-    }
+    var data = JSON.parse(ctx.request.body);
+   
     var newName = data.newName;
     var userExist = false;
-    await apiModel.findMobileUserByName(newName)
-            .then(res=>{
+    await checkToken(ctx).then(async res => {
+        console.log(res)
+        let isSuccess = false
+        await apiModel.findMobileUserByName(newName)
+            .then(res => {
                 //console.log('res',res) 
                 if (res.length == 0) {
-                   ctx.body = 'notRepeatName';
-                   userExist = true;
-                }else{
-                    ctx.body = 'repeatName';   
-                } 
+                    userExist = false;
+                } else {
+                    userExist = true
+                }
             })
-    if (userExist) {
-        await Promise.all([
-                apiModel.updateMobileName([newName,oldName]),
-                apiModel.updateMobileCommentName([newName,oldName]),
-                apiModel.updateMobileLikeName([newName,oldName])
-            ]) 
-            .then(res=>{
-                ctx.body = 'editSuccess'
-            }).catch(err=>{
-                ctx.body = 'editError'
-            })    
-    }            
+        if (!userExist) {
+            let password = ''
+            await Promise.all([
+                    apiModel.findMobileUserByName(oldName),
+                    apiModel.updateMobileName([newName, oldName]),
+                    apiModel.updateMobileCommentName([newName, oldName]),
+                    apiModel.updateMobileLikeName([newName, oldName])
+                ])
+                .then(res => {
+                    console.log(Object.assign(res[0][0]))
+                    password = Object.assign(res[0][0]).password
+                    isSuccess = true
+                    console.log('用户名修改成功')
+                    let nowToken = md5(newName + 'token' + password)
+                    ctx.body = {
+                        code: 200,
+                        token: nowToken,
+                        message: '用户名修改成功'
+                    }
+                }).catch(err => {
+                    ctx.body = {
+                        code: 500,
+                        message: '用户名修改失败'
+                    }
+                })
+            
+        }else{
+            ctx.body = {
+                code: 500,
+                message:'用户名存在'
+            }
+        }
+    }).catch(err => {
+        console.log(err)
+        ctx.body = err
+        return
+    })
+    
 })
 // 获取用户头像
 router.get('/vi/avator/list',koaBody(),async(ctx)=>{
@@ -273,8 +309,10 @@ router.get('/vi/avator/list',koaBody(),async(ctx)=>{
     await apiModel.findMobileUserByName(name)
         .then(res=>{
             console.log('avator',res)
-            if (res.length >=1) {
-                ctx.body = res[0]['avator']
+            console.log(res)
+            if (res.length >= 1 ) {
+                console.log(Object.assign({},res[0]))
+                ctx.body = Object.assign({}, res[0]).avator
             }else{
                 // 没有上传头像
                 ctx.body = 'none'
@@ -290,7 +328,8 @@ router.post('/vi/avator',koaBody({
     "jsonLimit":"5mb",
     "textLimit":"5mb"
 }),async(ctx)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
+    ctx.set("Access-Control-Allow-Credentials", true);
     var data;
     var requestBody = ctx.request.body;
     if(typeof requestBody === 'string'){
@@ -299,20 +338,46 @@ router.post('/vi/avator',koaBody({
     else if(typeof requestBody === 'object'){
         data = requestBody
     }
-    var name = decodeURIComponent(ctx.querystring.split('=')[1])
+    var name = data.userName
     var avator = data.avator;
     var base64Data = avator.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = new Buffer(base64Data, 'base64');
     var getName = Number(Math.random().toString().substr(3)).toString(36) + Date.now()
-    await fs.writeFile('./public/images/avator/'+getName +'.png', dataBuffer,err=>{});
-    await Promise.all([
-            apiModel.updateMobileAvator([getName,name]),
-            apiModel.updateMobileCommentAvator([getName,name])
-        ]).then(res=>{
-            
+    await checkToken(ctx).then(async res => {
+        console.log(res)
+        let uploadDone = await new Promise((reslove, reject) => {
+            fs.writeFile('./public/images/avator/' + getName + '.png', dataBuffer, err => {
+                if (err) {
+                    reject(false)
+                }
+                reslove(true)
+            });
         })
-     
-    ctx.body = getName
+        if (uploadDone) {
+            console.log(getName, name)
+            await Promise.all([
+                apiModel.updateMobileAvator([getName, name]),
+                apiModel.updateMobileCommentAvator([getName, name])
+            ]).then(res => {
+                console.log(res, '上传成功')
+                ctx.body = {
+                    code: 200,
+                    avator: getName,
+                    message: '上传成功'
+                }
+            }).catch(err=>{
+                ctx.body = {
+                    code: 500,
+                    message: '上传失败'
+                }
+            })
+        }
+    }).catch(err => {
+        console.log(err)
+        ctx.body = err
+        return
+    })
+    
 })
 
 // 验证码
@@ -320,10 +385,17 @@ router.get('/vi/yzm/img',async(ctx,next)=>{
     ctx.set('Access-Control-Allow-Origin', '*');
     const captcha = require('trek-captcha')
     const { token, buffer } = await captcha({ size: 4})
+    let getYzm = false
     //console.log(token, buffer)
-    fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {}).end(buffer)
+    getYzm = await new Promise((reslove,reject)=>{
+        fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {
+            reslove(true)
+        }).end(buffer)
+    })
+    if (getYzm){
+        ctx.body = token
+    }
     console.log('验证码',token)
-    ctx.body = token
 })
 
 // 搜索

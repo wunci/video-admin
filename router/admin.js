@@ -8,7 +8,6 @@ var fs = require('fs')
 router.get('/', async(ctx, next) => {
     var page
     let dataLength = ''
-    //console.log(ctx.querystring)
     if (ctx.querystring == '') {
         page = 1
     }else{
@@ -38,20 +37,19 @@ router.get('/signin', async(ctx, next) => {
 })
 // 登录 post
 router.post('/signin', koaBody(), async(ctx, next) => {
-    var name = ctx.request.body.userName
-    var pass = ctx.request.body.password;
-    await apiModel.findUser(name)
+    var {userName,password} = ctx.request.body
+    await apiModel.findUser(userName)
         .then(res => {
-            var res = JSON.parse(JSON.stringify(res))
-            if (res[0]['username'] === name) {
-                ctx.session.user = name;
-                ctx.session.pass = pass;
+            // console.log(res,res[0].username)
+            if (res[0]['username'] === userName) {
+                ctx.session.user = userName;
+                ctx.session.pass = password;
                 ctx.redirect('/')
             }
         }).catch(() => {
-            ctx.session.user = name;
-            ctx.session.pass = pass;
-            apiModel.addUser([name, pass])
+            ctx.session.user = userName;
+            ctx.session.pass = password;
+            apiModel.addUser([userName, password])
         })
     await ctx.redirect('/')
 
@@ -79,7 +77,7 @@ router.post('/upload', koaBody({
         uploadDir: './public/images'
     }
 }), async(ctx, next) => {
-    var i_body = JSON.parse(JSON.stringify(ctx.request.body))
+    var i_body = Object.assign({},ctx.request.body)
     var fields = i_body['fields']
         // console.log(ctx.request.body)
     var name = fields['video-name']
