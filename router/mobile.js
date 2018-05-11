@@ -6,6 +6,42 @@ var fs = require('fs')
 var moment = require('moment')
 var md5 = require('md5')
 let checkToken = require('../middlewares/check').checkToken
+
+// 存储手机端的用户信息
+router.post('/vi/signin', koaBody(), async (ctx, next) => {
+    ctx.set('Access-Control-Allow-Origin', '*');
+
+    var data = ctx.request.body
+    data = typeof data == 'string' ? JSON.parse(data) : data
+    var name = data.userName
+    var pass = data.password;
+    let token = md5(name + 'token' + pass)
+    //console.log('name',name)
+    await apiModel.findMobileUserByName(name)
+        .then(res => {
+            console.log('用户信息', res)
+            if (res[0]['userName'] === name && res[0]['password'] === pass) {
+                ctx.body = {
+                    code: 200,
+                    avator: res[0]['avator'],
+                    token: token,
+                    message: '登录成功'
+                }
+            } else {
+                ctx.body = {
+                    code: 500,
+                    message: '用户名或密码错误'
+                }
+            }
+        }).catch(() => {
+            ctx.body = {
+                code: 201,
+                msg: '注册成功',
+                token: token
+            }
+            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm')])
+        })
+})
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
 
@@ -18,10 +54,18 @@ router.get('/vi/list', async(ctx, next) => {
             apiModel.findDataByCls('综艺'),
             apiModel.findData('videos')
         ]).then(res => {
-            ctx.body = res
+            ctx.body = {
+                code: 200,
+                data: res,
+                message:'获取列表成功'
+            }
+        }).catch(err=>{
+            ctx.body = {
+                code: 500,
+                message: '获取订单失败'
+            }
         })
 })
- 
 // 获取单个id的信息
 router.get('/vi/:id',async(ctx) => {
 
@@ -35,7 +79,16 @@ router.get('/vi/:id',async(ctx) => {
             apiModel.getUidLikeLength(id)
         ])
         .then(res => {
-            ctx.body = res
+            ctx.body = {
+                code: 200,
+                data: res,
+                message: '获取详情成功'
+            }
+        }).catch(err=>{
+            ctx.body = {
+                code: 500,
+                message: '获取详情失败'
+            }
         })
 })
 // 获取文章的评论
@@ -44,10 +97,18 @@ router.get('/vi/:id/comment',async(ctx) => {
 
     await apiModel.getCommentById(ctx.params.id)
         .then(res => {
-            ctx.body = res
+            ctx.body = {
+                code:200,
+                data:res,
+                message:'获取评论成功'
+            }
+        }).catch(err=>{
+            ctx.body = {
+                code: 500,
+                message: '获取评论失败'
+            }
         })
 })
-
 // 获取用户的评论
 router.get('/vi/comment/user',async(ctx) => {
 
@@ -57,7 +118,16 @@ router.get('/vi/comment/user',async(ctx) => {
     console.log('name',name)
     await apiModel.getCommentByUser(decodeURIComponent(name))
         .then(res => {
-            ctx.body = res
+            ctx.body = {
+                code: 200,
+                data: res,
+                message: '获取用户的评论成功'
+            }
+        }).catch(err=>{
+            ctx.body = {
+                code: 500,
+                message: '获取用户的评论失败'
+            }
         })
 })
 // 评论
@@ -66,7 +136,8 @@ router.post('/vi/:id/comment', koaBody(),async(ctx) => {
     ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
     ctx.set("Access-Control-Allow-Credentials", true);
 
-    var data = JSON.parse(ctx.request.body);
+    var data = ctx.request.body
+        data = typeof data == 'string' ? JSON.parse(data) : data
 
     var {userName,content,videoName,avator} = data
 
@@ -120,17 +191,19 @@ router.post('/vi/delete/comment/:id', koaBody(),async(ctx) => {
       
     }).catch(err => {
         console.log(err)
+        
         ctx.body = err
     })
    
 })
-// like
+// 点击喜欢
 router.post('/vi/:id/like', koaBody(),async(ctx) => {
 
     ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
     ctx.set("Access-Control-Allow-Credentials", true);
 
-    var data = JSON.parse(ctx.request.body);
+    var data = ctx.request.body
+        data = typeof data == 'string' ? JSON.parse(data) : data
     
     var name = data.userName
     var like = data.like;
@@ -186,9 +259,16 @@ router.get('/vi/:id/like',async(ctx) => {
     // console.log(data)
     await apiModel.getLike(name,uid)
             .then(res => {
-                ctx.body = res
+                ctx.body = {
+                    code: 200,
+                    data:res,
+                    message:'获取单个video成功'
+                }
             }).catch(err=>{
-                ctx.body = err
+                ctx.body = {
+                    code: 500,
+                    message: '获取单个video失败'
+                }
             })
 })
 // 获取个人like列表
@@ -200,45 +280,15 @@ router.get('/vi/like/list',async(ctx) => {
             apiModel.getLikeList(name,1),
             apiModel.getLikeList(name,2)
         ]).then(res => {
-            ctx.body = res
+            ctx.body = {
+                code:200,
+                data:res,
+                message: '获取个人like列表成功'
+            }
         }).catch(err=>{
             ctx.body = err
         })
   
-})
-// 存储手机端的用户信息
-router.post('/vi/signin', koaBody(), async(ctx,next)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
-
-    var data = JSON.parse(ctx.request.body);
-    var name = data.userName
-    var pass = data.password;
-    let token = md5(name +'token'+ pass)
-    //console.log('name',name)
-    await apiModel.findMobileUserByName(name)
-        .then(res => {
-            console.log('用户信息',res)
-            if (res[0]['userName'] === name && res[0]['password'] === pass) {
-               ctx.body = {
-                   code: 200,
-                   avator: res[0]['avator'],
-                   token: token,
-                   message: '登录成功'
-               }
-            }else{
-                ctx.body = {
-                    code: 500,
-                    message:'用户名或密码错误'
-                }
-            }
-        }).catch(() => {
-            ctx.body =  {
-                code: 201,
-                msg: '注册成功',
-                token: token
-            }  
-            apiModel.addMobileUser([name, pass, moment().format('YYYY-MM-DD HH:mm')])
-        })
 })
 // 修改用户名
 router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
@@ -247,7 +297,8 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
     ctx.set("Access-Control-Allow-Credentials", true);
 
     var oldName = decodeURIComponent(ctx.querystring.split('=')[1])
-    var data = JSON.parse(ctx.request.body);
+    var data = ctx.request.body
+        data = typeof data == 'string' ? JSON.parse(data) : data
    
     var newName = data.newName;
     var userExist = false;
@@ -256,7 +307,6 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
         let isSuccess = false
         await apiModel.findMobileUserByName(newName)
             .then(res => {
-                //console.log('res',res) 
                 if (res.length == 0) {
                     userExist = false;
                 } else {
@@ -312,10 +362,18 @@ router.get('/vi/avator/list',koaBody(),async(ctx)=>{
             console.log(res)
             if (res.length >= 1 ) {
                 console.log(Object.assign({},res[0]))
-                ctx.body = Object.assign({}, res[0]).avator
+                ctx.body = {
+                    code: 200,
+                    avator: Object.assign({}, res[0]).avator,
+                    message:'获取头像成功'
+                }
             }else{
                 // 没有上传头像
-                ctx.body = 'none'
+                ctx.body = {
+                    code: 200,
+                    avator: '',
+                    message: '还没有上传头像'
+                }
             }
         }).catch(err=>{
             ctx.body = 'none'
@@ -405,7 +463,12 @@ router.get('/vi/search/result',koaBody(), async(ctx)=>{
     console.log(val)
     await apiModel.search(val).then(res=>{
         console.log('搜索结果',res)
-        ctx.body = res
+        ctx.body = {
+            code:200,
+            data:res,
+            message:'获取搜索结果成功',
+            total:res.length
+        }
     })
 })
 

@@ -8,7 +8,9 @@ module.exports = {
 	},
 	 checkToken:async ctx=>{
 		// let token = ctx.cookies.get('token')
-		let {userName,token} = JSON.parse(ctx.request.body)
+		var data = ctx.request.body
+		data = typeof data == 'string' ? JSON.parse(data) : data
+		let {userName,token} = data
 		console.log('token', token, userName)
 		return new Promise((reslove,reject)=>{
 			apiModel.findMobileUserByName(userName).then(res => {
