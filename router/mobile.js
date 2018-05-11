@@ -173,11 +173,9 @@ router.post('/vi/delete/comment/:id', koaBody(),async(ctx) => {
     ctx.set("Access-Control-Allow-Credentials", true);
     await checkToken(ctx).then(async res => {
         console.log(res)
-        let isSuccess = false
         await apiModel.deleteComment(ctx.params.id)
             .then(res => {
                 console.log(res, '删除成功')
-                isSuccess = true
                 ctx.body = {
                     code: 200,
                     message: '删除成功'
@@ -213,12 +211,8 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
     var uid = ctx.params.id;
     var newStar
     await checkToken(ctx).then(async res => {
-        let isDone = false
         let newStar
         await apiModel.addLike([like, name, videoName, videoImg, star, uid])
-            .then(res => {
-               isDone = true
-            })
         // 修改评分
         await Promise.all([
             apiModel.getLikeStar(1, uid),
@@ -304,7 +298,6 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
     var userExist = false;
     await checkToken(ctx).then(async res => {
         console.log(res)
-        let isSuccess = false
         await apiModel.findMobileUserByName(newName)
             .then(res => {
                 if (res.length == 0) {
@@ -324,7 +317,6 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
                 .then(res => {
                     console.log(Object.assign(res[0][0]))
                     password = Object.assign(res[0][0]).password
-                    isSuccess = true
                     console.log('用户名修改成功')
                     let nowToken = md5(newName + 'token' + password)
                     ctx.body = {
