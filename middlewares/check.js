@@ -9,10 +9,10 @@ module.exports = {
 	},
 	checkToken:async ctx=>{
 		let token = ctx.get('token')
-		console.log('token', ctx.get('token'))
+		// console.log('token', ctx.get('token'))
 		var data = ctx.request.body
 		let {userName} = data
-		console.log('token', token, userName)
+		// console.log('token', token, userName)
 		return new Promise((reslove,reject)=>{
 			jwt.verify(token, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', (err, decoded) => {
 				if (err) {

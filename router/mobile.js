@@ -23,7 +23,7 @@ router.post('/vi/signin', koaBody(), async (ctx, next) => {
     
     await apiModel.findMobileUserByName(name)
         .then(res => {
-            console.log('用户信息', res)
+            // console.log('用户信息', res)
             if (res[0]['userName'] === name && res[0]['password'] === pass) {
                 ctx.body = {
                     code: 200,
@@ -48,9 +48,9 @@ router.post('/vi/signin', koaBody(), async (ctx, next) => {
 })
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
-    console.log('header token',ctx.get('token'))
+    // console.log('header token',ctx.get('token'))
     
-     console.log(ctx.cookies.get('token'))
+    //  console.log(ctx.cookies.get('token'))
     await Promise.all([
             apiModel.findDataByCls('电影'),
             apiModel.findDataByCls('电视剧'),
@@ -74,7 +74,7 @@ router.post('/vi/getVideoById', koaBody() ,async (ctx) => {
 
 
     var id = ctx.request.body.videoId
-    console.log('id',id)
+    // console.log('id',id)
     await Promise.all([
             apiModel.getDataById(id),
             apiModel.getLikeStar(1,id),
@@ -95,7 +95,7 @@ router.post('/vi/getVideoById', koaBody() ,async (ctx) => {
 })
 // 获取文章的评论
 router.post('/vi/getVideoComment', koaBody(), async (ctx) => {
-    console.log(ctx.request.body)
+    // console.log(ctx.request.body)
     await apiModel.getCommentById(ctx.request.body.videoId)
         .then(res => {
             ctx.body = {
@@ -133,10 +133,10 @@ router.post('/vi/postComment', koaBody(),async(ctx) => {
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
 
     await checkToken(ctx).then(async res=>{
-        console.log(res)
+        // console.log(res)
         await apiModel.addComment([userName, date, content, videoName, videoId, avator])
             .then(res => {
-                console.log(res)
+                // console.log(res)
                  ctx.body = {
                      code: 200,
                      message: '评论成功'
@@ -149,7 +149,7 @@ router.post('/vi/postComment', koaBody(),async(ctx) => {
             })
         
     }).catch(err=>{
-        console.log(err)
+        // console.log(err)
         ctx.body = err
         return
     })
@@ -157,10 +157,10 @@ router.post('/vi/postComment', koaBody(),async(ctx) => {
 // 删除评论
 router.post('/vi/deleteComment', koaBody(),async(ctx) => {
     await checkToken(ctx).then(async res => {
-        console.log(res)
+        // console.log(res)
         await apiModel.deleteComment(ctx.request.body.commentId)
             .then(res => {
-                console.log(res, '删除成功')
+                // console.log(res, '删除成功')
                 ctx.body = {
                     code: 200,
                     message: '删除成功'
@@ -173,7 +173,7 @@ router.post('/vi/deleteComment', koaBody(),async(ctx) => {
             })
       
     }).catch(err => {
-        console.log(err)
+        // console.log(err)
         
         ctx.body = err
     })
@@ -192,7 +192,7 @@ router.post('/vi/postUserLike', koaBody(),async(ctx) => {
             apiModel.getUidLikeLength(videoId)
         ]).then(async res => {
             newStar = (res[0].length / res[1].length * 10).toFixed(1)
-            console.log('newStar', newStar)
+            // console.log('newStar', newStar)
         })
         await Promise.all([
             apiModel.updateVideoStar([newStar, videoId]),
@@ -210,7 +210,7 @@ router.post('/vi/postUserLike', koaBody(),async(ctx) => {
         })
        
     }).catch(err => {
-        console.log(err)
+        // console.log(err)
         ctx.body = err
     })
     
@@ -259,7 +259,7 @@ router.post('/vi/editUserName', koaBody(), async(ctx,next)=>{
     var {userName,newName} = ctx.request.body
     var userExist = false;
     await checkToken(ctx).then(async res => {
-        console.log(res)
+        // console.log(res)
         await apiModel.findMobileUserByName(newName)
             .then(res => {
                 if (res.length == 0) {
@@ -277,9 +277,9 @@ router.post('/vi/editUserName', koaBody(), async(ctx,next)=>{
                     apiModel.updateMobileLikeName([newName, userName])
                 ])
                 .then(res => {
-                    console.log(Object.assign(res[0][0]))
+                    // console.log(Object.assign(res[0][0]))
                     password = Object.assign(res[0][0]).password
-                    console.log('用户名修改成功')
+                    // console.log('用户名修改成功')
                     let nowToken = jwt.sign({
                         userName: newName
                     }, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', {
@@ -304,7 +304,7 @@ router.post('/vi/editUserName', koaBody(), async(ctx,next)=>{
             }
         }
     }).catch(err => {
-        console.log(err)
+        // console.log(err)
         ctx.body = err
         return
     })
@@ -315,10 +315,10 @@ router.post('/vi/getUserAvator',koaBody(),async(ctx)=>{
     
     await apiModel.findMobileUserByName(ctx.request.body.userName)
         .then(res=>{
-            console.log('avator',res)
-            console.log(res)
+            // console.log('avator',res)
+            // console.log(res)
             if (res.length >= 1 ) {
-                console.log(Object.assign({},res[0]))
+                // console.log(Object.assign({},res[0]))
                 ctx.body = {
                     code: 200,
                     avator: Object.assign({}, res[0]).avator,
@@ -349,7 +349,7 @@ router.post('/vi/uploadAvator',koaBody({
     var dataBuffer = new Buffer(base64Data, 'base64');
     var getName = Number(Math.random().toString().substr(3)).toString(36) + Date.now()
     await checkToken(ctx).then(async res => {
-        console.log(res)
+        // console.log(res)
         let uploadDone = await new Promise((reslove, reject) => {
             fs.writeFile('./public/images/avator/' + getName + '.png', dataBuffer, err => {
                 if (err) {
@@ -359,12 +359,12 @@ router.post('/vi/uploadAvator',koaBody({
             });
         })
         if (uploadDone) {
-            console.log(getName, userName)
+            // console.log(getName, userName)
             await Promise.all([
                 apiModel.updateMobileAvator([getName, userName]),
                 apiModel.updateMobileCommentAvator([getName, userName])
             ]).then(res => {
-                console.log(res, '上传成功')
+                // console.log(res, '上传成功')
                 ctx.body = {
                     code: 200,
                     avator: getName,
@@ -378,7 +378,7 @@ router.post('/vi/uploadAvator',koaBody({
             })
         }
     }).catch(err => {
-        console.log(err)
+        // console.log(err)
         ctx.body = err
     })
     
@@ -390,7 +390,7 @@ router.get('/vi/getYzm',async(ctx,next)=>{
     const captcha = require('trek-captcha')
     const { token, buffer } = await captcha({ size: 4})
     let getYzm = false
-    //console.log(token, buffer)
+    // console.log(token, buffer)
     getYzm = await new Promise((reslove,reject)=>{
         fs.createWriteStream('./public/images/yzm.jpg').on('finish',  (data) => {
             reslove(true)
@@ -410,16 +410,16 @@ router.get('/vi/getYzm',async(ctx,next)=>{
             
         }
     }
-    console.log('验证码',token)
+    // console.log('验证码',token)
 })
 
 // 搜索
 router.post('/vi/search',koaBody(), async(ctx)=>{
     
     var val = ctx.request.body.val
-    console.log(val)
+    // console.log(val)
     await apiModel.search(val).then(res=>{
-        console.log('搜索结果',res)
+        // console.log('搜索结果',res)
         ctx.body = {
             code:200,
             data:res,

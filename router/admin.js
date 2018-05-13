@@ -94,17 +94,17 @@ router.post('/upload', koaBody({
  
     await apiModel.insertData(data)
         .then((res) => {
-            console.log('添加成功')
+            // console.log('添加成功')
             res.body = 'success'
             ctx.redirect('/')
         }).catch(res => {
-            console.log('error', res)
+            // console.log('error', res)
         })
         
 })
 // 编辑页面
 router.get('/edit/:id', async(ctx, next) => {
-    console.log('params.id', ctx.params.id)
+    // console.log('params.id', ctx.params.id)
     await apiModel.findDataById(ctx.params.id)
         .then(res => {
             data = JSON.parse(JSON.stringify(res))
@@ -146,7 +146,7 @@ router.post('/edit/:id', koaBody({
             .then(() => {
                 ctx.redirect('/')
             }).catch(res => {
-                console.log('error', res)
+                // console.log('error', res)
             })
 
     } else {
@@ -155,7 +155,7 @@ router.post('/edit/:id', koaBody({
                 apiModel.updateLikesImg([img.match(/\w+/g)[2],ctx.params.id])
             ])
             .then(() => {
-                console.log('更新成功')
+                // console.log('更新成功')
                 ctx.redirect('/')
             })
          
@@ -167,7 +167,7 @@ router.post('/delete/:id', koaBody(), async(ctx, next) => {
         .then(() => {
             ctx.body = 'success'
         }).catch((err) => {
-            console.log(err)
+            // console.log(err)
         })    
 })
 
@@ -230,7 +230,7 @@ router.get('/comment',async(ctx,next)=>{
     await apiModel.findPageData('comments', page, 15).then(res => {
         data = res
     })
-    console.log(dataLength)
+    // console.log(dataLength)
     await ctx.render('comments', {
         comments: data,
         session: ctx.session,
