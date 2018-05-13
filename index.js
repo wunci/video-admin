@@ -9,6 +9,9 @@ const views = require('koa-views')
 const koaBody = require('koa-body');
 const compress = require('koa-compress')
 const logger = require('koa-logger')
+const cors = require('koa-cors')
+const router = require('koa-router')
+var route = new router();
 const app = new Koa()
 
 const sessionMysqlConfig = {
@@ -18,6 +21,7 @@ const sessionMysqlConfig = {
 	database:config.database.DATABASE
 }
 app.use(logger())
+app.use(cors())
 app.use(session({
 	key:'USER_SID',
 	store:new MysqlStore(sessionMysqlConfig)
@@ -33,8 +37,8 @@ app.use(views(path.join(__dirname,'./views'),{
 	extension: 'ejs'
 }))
 app.use(compress({threshold: 2048}))
-app.use(require('./router/admin.js').routes())
-app.use(require('./router/mobile.js').routes())
+app.use(require('./router/admin.js').routes()).use(route.allowedMethods())
+app.use(require('./router/mobile.js').routes()).use(route.allowedMethods())
 
 
 app.use(koaBody({ multipart: true,formidable:{uploadDir: path.join(__dirname,'./public/images')}}));

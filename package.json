@@ -12,9 +12,11 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "ejs": "^2.5.7",
+    "jsonwebtoken": "^8.2.1",
     "koa": "^2.3.0",
     "koa-body": "^2.3.0",
     "koa-compress": "^2.0.0",
+    "koa-cors": "^0.0.16",
     "koa-mysql-session": "^0.0.2",
     "koa-router": "^7.2.1",
     "koa-session-minimal": "^3.0.4",

@@ -1,46 +1,56 @@
 var apiModel = require('../lib/sql.js')
 let md5 = require('md5')
+let jwt = require('jsonwebtoken');
 module.exports = {
 	checkLogin:ctx=>{
 		if (!ctx.session || !ctx.session.user) {
 			ctx.redirect('/signin')
 		}
 	},
-	 checkToken:async ctx=>{
-		// let token = ctx.cookies.get('token')
+	checkToken:async ctx=>{
+		let token = ctx.get('token')
+		console.log('token', ctx.get('token'))
 		var data = ctx.request.body
-		data = typeof data == 'string' ? JSON.parse(data) : data
-		let {userName,token} = data
+		let {userName} = data
 		console.log('token', token, userName)
 		return new Promise((reslove,reject)=>{
-			apiModel.findMobileUserByName(userName).then(res => {
-				var res = Object.assign(res)
-				console.log(res)
-				if(res.length > 0){
-					console.log(res[0])
-					res = res[0]
-					let nowToken = userName + 'token' + res.password
-					console.log(md5(nowToken))
-					if (md5(nowToken) != token) {
-						console.log('无效的token')
+			jwt.verify(token, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', (err, decoded) => {
+				if (err) {
+					console.log(err.name, err.message)
+					if (err.message == 'jwt expired'){
 						reject({
 							code: 404,
-							message: '用户权限校验失败'
+							message: '用户权限过期'
 						})
-					}else{
-						reslove({
-							code: 200,
-							message: '身份验证成功'
+					} else {
+						reject({
+							code: 404,
+							message: '无效的用户权限，请重新登录'
 						})
 					}
-				}else{
-					console.log('用户不存在')
-					reject({
-						code: 404,
-						message: '用户不存在'
-					})
+					/*
+						err = {
+						name: 'TokenExpiredError',
+						message: 'jwt expired',
+						expiredAt: 1408621000
+						}
+					*/
+				} else {
+					console.log('token success', decoded)
+					if (userName === decoded.userName){
+						reslove({
+							code:200,
+							message:'验证成功'
+						})
+					}else{
+						reject({
+							code: 404,
+							message: '用户身份不一致'
+						})
+					}
+					
 				}
-			})
+			});
 		})
 	}
 }

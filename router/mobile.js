@@ -6,17 +6,21 @@ var fs = require('fs')
 var moment = require('moment')
 var md5 = require('md5')
 let checkToken = require('../middlewares/check').checkToken
+let jwt = require('jsonwebtoken');
 
 // 存储手机端的用户信息
 router.post('/vi/signin', koaBody(), async (ctx, next) => {
-    ctx.set('Access-Control-Allow-Origin', '*');
-
     var data = ctx.request.body
     data = typeof data == 'string' ? JSON.parse(data) : data
     var name = data.userName
     var pass = data.password;
-    let token = md5(name + 'token' + pass)
-    //console.log('name',name)
+    
+    let token = jwt.sign({
+        userName: name
+    }, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', {
+        expiresIn: '30 days'
+    });
+    
     await apiModel.findMobileUserByName(name)
         .then(res => {
             console.log('用户信息', res)
@@ -44,9 +48,8 @@ router.post('/vi/signin', koaBody(), async (ctx, next) => {
 })
 // 获取三个列表的数据
 router.get('/vi/list', async(ctx, next) => {
-
-     ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-     ctx.set("Access-Control-Allow-Credentials", true);
+    console.log('header token',ctx.get('token'))
+    
      console.log(ctx.cookies.get('token'))
     await Promise.all([
             apiModel.findDataByCls('电影'),
@@ -67,11 +70,10 @@ router.get('/vi/list', async(ctx, next) => {
         })
 })
 // 获取单个id的信息
-router.get('/vi/:id',async(ctx) => {
+router.post('/vi/getVideoById', koaBody() ,async (ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
 
-    var id = ctx.params.id
+    var id = ctx.request.body.videoId
     console.log('id',id)
     await Promise.all([
             apiModel.getDataById(id),
@@ -92,10 +94,9 @@ router.get('/vi/:id',async(ctx) => {
         })
 })
 // 获取文章的评论
-router.get('/vi/:id/comment',async(ctx) => {
-    ctx.set('Access-Control-Allow-Origin', '*');
-
-    await apiModel.getCommentById(ctx.params.id)
+router.post('/vi/getVideoComment', koaBody(), async (ctx) => {
+    console.log(ctx.request.body)
+    await apiModel.getCommentById(ctx.request.body.videoId)
         .then(res => {
             ctx.body = {
                 code:200,
@@ -110,13 +111,9 @@ router.get('/vi/:id/comment',async(ctx) => {
         })
 })
 // 获取用户的评论
-router.get('/vi/comment/user',async(ctx) => {
+router.post('/vi/getUserComment', koaBody(),async (ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
-
-    var name = ctx.querystring.split('=')[1]
-    console.log('name',name)
-    await apiModel.getCommentByUser(decodeURIComponent(name))
+    await apiModel.getCommentByUser(ctx.request.body.userName)
         .then(res => {
             ctx.body = {
                 code: 200,
@@ -131,22 +128,13 @@ router.get('/vi/comment/user',async(ctx) => {
         })
 })
 // 评论
-router.post('/vi/:id/comment', koaBody(),async(ctx) => {
-
-    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-    ctx.set("Access-Control-Allow-Credentials", true);
-
-    var data = ctx.request.body
-        data = typeof data == 'string' ? JSON.parse(data) : data
-
-    var {userName,content,videoName,avator} = data
-
+router.post('/vi/postComment', koaBody(),async(ctx) => {
+    var {userName,content,videoName,avator,videoId} = ctx.request.body
     var date = moment().format('YYYY-MM-DD HH:mm:ss');
-    var uid = ctx.params.id;
 
     await checkToken(ctx).then(async res=>{
         console.log(res)
-        await apiModel.addComment([userName, date, content, videoName, uid, avator])
+        await apiModel.addComment([userName, date, content, videoName, videoId, avator])
             .then(res => {
                 console.log(res)
                  ctx.body = {
@@ -167,13 +155,10 @@ router.post('/vi/:id/comment', koaBody(),async(ctx) => {
     })
 })
 // 删除评论
-router.post('/vi/delete/comment/:id', koaBody(),async(ctx) => {
-
-    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-    ctx.set("Access-Control-Allow-Credentials", true);
+router.post('/vi/deleteComment', koaBody(),async(ctx) => {
     await checkToken(ctx).then(async res => {
         console.log(res)
-        await apiModel.deleteComment(ctx.params.id)
+        await apiModel.deleteComment(ctx.request.body.commentId)
             .then(res => {
                 console.log(res, '删除成功')
                 ctx.body = {
@@ -195,35 +180,23 @@ router.post('/vi/delete/comment/:id', koaBody(),async(ctx) => {
    
 })
 // 点击喜欢
-router.post('/vi/:id/like', koaBody(),async(ctx) => {
-
-    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-    ctx.set("Access-Control-Allow-Credentials", true);
-
-    var data = ctx.request.body
-        data = typeof data == 'string' ? JSON.parse(data) : data
-    
-    var name = data.userName
-    var like = data.like;
-    var videoName = data.videoName;
-    var videoImg = data.videoImg;
-    var star = data.star;
-    var uid = ctx.params.id;
+router.post('/vi/postUserLike', koaBody(),async(ctx) => {
+    var {userName,like,videoName,videoId,videoImg,star} = ctx.request.body
     var newStar
     await checkToken(ctx).then(async res => {
         let newStar
-        await apiModel.addLike([like, name, videoName, videoImg, star, uid])
+        await apiModel.addLike([like, userName, videoName, videoImg, star, videoId])
         // 修改评分
         await Promise.all([
-            apiModel.getLikeStar(1, uid),
-            apiModel.getUidLikeLength(uid)
+            apiModel.getLikeStar(1, videoId),
+            apiModel.getUidLikeLength(videoId)
         ]).then(async res => {
             newStar = (res[0].length / res[1].length * 10).toFixed(1)
             console.log('newStar', newStar)
         })
         await Promise.all([
-            apiModel.updateVideoStar([newStar, uid]),
-            apiModel.updateLikeStar([newStar, uid])
+            apiModel.updateVideoStar([newStar, videoId]),
+            apiModel.updateLikeStar([newStar, videoId])
         ]).then(res=>{
             ctx.body = {
                 code: 200,
@@ -244,14 +217,10 @@ router.post('/vi/:id/like', koaBody(),async(ctx) => {
         
 })
 // 获取单个video的like信息
-router.get('/vi/:id/like',async(ctx) => {
+router.post('/vi/getUserSingleLike', koaBody() ,async (ctx) => {
 
-    ctx.set('Access-Control-Allow-Origin', '*');
-    
-    var name = decodeURIComponent(ctx.querystring.split('=')[1])
-    var uid = ctx.params.id;
-    // console.log(data)
-    await apiModel.getLike(name,uid)
+    var {userName,videoId} = ctx.request.body
+    await apiModel.getLike(userName, videoId)
             .then(res => {
                 ctx.body = {
                     code: 200,
@@ -266,13 +235,13 @@ router.get('/vi/:id/like',async(ctx) => {
             })
 })
 // 获取个人like列表
-router.get('/vi/like/list',async(ctx) => {
-    ctx.set('Access-Control-Allow-Origin', '*');
-    var name = decodeURIComponent(ctx.querystring.split('=')[1])
+router.post('/vi/getUserLikeData', koaBody(), async (ctx) => {
+    
+    var userName = ctx.request.body.userName
 
     await Promise.all([
-            apiModel.getLikeList(name,1),
-            apiModel.getLikeList(name,2)
+            apiModel.getLikeList(userName,1),
+            apiModel.getLikeList(userName,2)
         ]).then(res => {
             ctx.body = {
                 code:200,
@@ -285,16 +254,9 @@ router.get('/vi/like/list',async(ctx) => {
   
 })
 // 修改用户名
-router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
+router.post('/vi/editUserName', koaBody(), async(ctx,next)=>{
 
-    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-    ctx.set("Access-Control-Allow-Credentials", true);
-
-    var oldName = decodeURIComponent(ctx.querystring.split('=')[1])
-    var data = ctx.request.body
-        data = typeof data == 'string' ? JSON.parse(data) : data
-   
-    var newName = data.newName;
+    var {userName,newName} = ctx.request.body
     var userExist = false;
     await checkToken(ctx).then(async res => {
         console.log(res)
@@ -309,16 +271,20 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
         if (!userExist) {
             let password = ''
             await Promise.all([
-                    apiModel.findMobileUserByName(oldName),
-                    apiModel.updateMobileName([newName, oldName]),
-                    apiModel.updateMobileCommentName([newName, oldName]),
-                    apiModel.updateMobileLikeName([newName, oldName])
+                    apiModel.findMobileUserByName(userName),
+                    apiModel.updateMobileName([newName, userName]),
+                    apiModel.updateMobileCommentName([newName, userName]),
+                    apiModel.updateMobileLikeName([newName, userName])
                 ])
                 .then(res => {
                     console.log(Object.assign(res[0][0]))
                     password = Object.assign(res[0][0]).password
                     console.log('用户名修改成功')
-                    let nowToken = md5(newName + 'token' + password)
+                    let nowToken = jwt.sign({
+                        userName: newName
+                    }, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', {
+                        expiresIn: '30 days'
+                    });
                     ctx.body = {
                         code: 200,
                         token: nowToken,
@@ -345,10 +311,9 @@ router.post('/vi/edit/user', koaBody(), async(ctx,next)=>{
     
 })
 // 获取用户头像
-router.get('/vi/avator/list',koaBody(),async(ctx)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
-    var name = decodeURIComponent(ctx.querystring.split('=')[1]);
-    await apiModel.findMobileUserByName(name)
+router.post('/vi/getUserAvator',koaBody(),async(ctx)=>{
+    
+    await apiModel.findMobileUserByName(ctx.request.body.userName)
         .then(res=>{
             console.log('avator',res)
             console.log(res)
@@ -373,23 +338,13 @@ router.get('/vi/avator/list',koaBody(),async(ctx)=>{
 
 })
 // 增加头像
-router.post('/vi/avator',koaBody({
+router.post('/vi/uploadAvator',koaBody({
     "formLimit":"5mb",
     "jsonLimit":"5mb",
     "textLimit":"5mb"
 }),async(ctx)=>{
-    ctx.set("Access-Control-Allow-Origin", ctx.request.header.origin)
-    ctx.set("Access-Control-Allow-Credentials", true);
-    var data;
-    var requestBody = ctx.request.body;
-    if(typeof requestBody === 'string'){
-        data = JSON.parse(requestBody)
-    }
-    else if(typeof requestBody === 'object'){
-        data = requestBody
-    }
-    var name = data.userName
-    var avator = data.avator;
+    
+    var {userName,avator} = ctx.request.body;
     var base64Data = avator.replace(/^data:image\/\w+;base64,/, "");
     var dataBuffer = new Buffer(base64Data, 'base64');
     var getName = Number(Math.random().toString().substr(3)).toString(36) + Date.now()
@@ -404,10 +359,10 @@ router.post('/vi/avator',koaBody({
             });
         })
         if (uploadDone) {
-            console.log(getName, name)
+            console.log(getName, userName)
             await Promise.all([
-                apiModel.updateMobileAvator([getName, name]),
-                apiModel.updateMobileCommentAvator([getName, name])
+                apiModel.updateMobileAvator([getName, userName]),
+                apiModel.updateMobileCommentAvator([getName, userName])
             ]).then(res => {
                 console.log(res, '上传成功')
                 ctx.body = {
@@ -425,14 +380,13 @@ router.post('/vi/avator',koaBody({
     }).catch(err => {
         console.log(err)
         ctx.body = err
-        return
     })
     
 })
 
 // 验证码
-router.get('/vi/yzm/img',async(ctx,next)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
+router.get('/vi/getYzm',async(ctx,next)=>{
+    
     const captcha = require('trek-captcha')
     const { token, buffer } = await captcha({ size: 4})
     let getYzm = false
@@ -443,15 +397,26 @@ router.get('/vi/yzm/img',async(ctx,next)=>{
         }).end(buffer)
     })
     if (getYzm){
-        ctx.body = token
+        ctx.body = {
+            code:200,
+            data:token,
+            message:'获取验证码成功'
+        }
+    }else{
+        ctx.body = {
+            code:500,
+            data: token,
+            message: '获取验证码失败'
+            
+        }
     }
     console.log('验证码',token)
 })
 
 // 搜索
-router.get('/vi/search/result',koaBody(), async(ctx)=>{
-    ctx.set('Access-Control-Allow-Origin', '*');
-    var val = decodeURIComponent(ctx.querystring.split('=')[1])
+router.post('/vi/search',koaBody(), async(ctx)=>{
+    
+    var val = ctx.request.body.val
     console.log(val)
     await apiModel.search(val).then(res=>{
         console.log('搜索结果',res)
