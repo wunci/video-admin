@@ -81,6 +81,7 @@ router.post('/vi/getVideoById', koaBody() ,async (ctx) => {
             apiModel.getUidLikeLength(id)
         ])
         .then(res => {
+            console.log(res)
             ctx.body = {
                 code: 200,
                 data: res,
@@ -174,7 +175,6 @@ router.post('/vi/deleteComment', koaBody(),async(ctx) => {
       
     }).catch(err => {
         // console.log(err)
-        
         ctx.body = err
     })
    
@@ -191,8 +191,9 @@ router.post('/vi/postUserLike', koaBody(),async(ctx) => {
             apiModel.getLikeStar(1, videoId),
             apiModel.getUidLikeLength(videoId)
         ]).then(async res => {
-            newStar = (res[0].length / res[1].length * 10).toFixed(1)
-            // console.log('newStar', newStar)
+            console.log(res)
+            newStar = (res[0][0]['count(*)'] / res[1][0]['count(*)'] * 10).toFixed(1)
+            console.log('newStar', newStar)
         })
         await Promise.all([
             apiModel.updateVideoStar([newStar, videoId]),
