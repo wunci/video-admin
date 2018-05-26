@@ -1,6 +1,8 @@
-var apiModel = require('../lib/sql.js')
+let apiModel = require('../lib/sql.js')
 let md5 = require('md5')
 let jwt = require('jsonwebtoken');
+let config = require('../config/default.js')
+
 module.exports = {
 	checkLogin:ctx=>{
 		if (!ctx.session || !ctx.session.user) {
@@ -14,7 +16,7 @@ module.exports = {
 		let {userName} = data
 		// console.log('token', token, userName)
 		return new Promise((reslove,reject)=>{
-			jwt.verify(token, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', (err, decoded) => {
+			jwt.verify(token, config.jwt_secret, (err, decoded) => {
 				if (err) {
 					console.log(err.name, err.message)
 					if (err.message == 'jwt expired'){

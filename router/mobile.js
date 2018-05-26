@@ -1,12 +1,13 @@
-var router = require('koa-router')()
-var apiModel = require('../lib/sql.js')
-var path = require('path')
-var koaBody = require('koa-body')
-var fs = require('fs')
-var moment = require('moment')
-var md5 = require('md5')
+let router = require('koa-router')()
+let apiModel = require('../lib/sql.js')
+let path = require('path')
+let koaBody = require('koa-body')
+let fs = require('fs')
+let moment = require('moment')
+let md5 = require('md5')
 let checkToken = require('../middlewares/check').checkToken
 let jwt = require('jsonwebtoken');
+let config = require('../config/default.js')
 
 // 存储手机端的用户信息
 router.post('/vi/signin', koaBody(), async (ctx, next) => {
@@ -17,7 +18,7 @@ router.post('/vi/signin', koaBody(), async (ctx, next) => {
     
     let token = jwt.sign({
         userName: name
-    }, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', {
+    }, config.jwt_secret , {
         expiresIn: '30 days'
     });
     
@@ -283,7 +284,7 @@ router.post('/vi/editUserName', koaBody(), async(ctx,next)=>{
                     // console.log('用户名修改成功')
                     let nowToken = jwt.sign({
                         userName: newName
-                    }, 'ddff0a63e06816ddd7b7d2e2ebc1e40205', {
+                    }, config.jwt_secret , {
                         expiresIn: '30 days'
                     });
                     ctx.body = {
