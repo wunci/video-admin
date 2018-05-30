@@ -1,14 +1,14 @@
 <% include header %>
 
-<form class="ui form segment" method="post" enctype='multipart/form-data' style="width: 60%;margin:0 auto 40px">
+<div class="ui form segment" onsubmit="return"  style="width: 60%;margin:0 auto 40px">
   <div class="field">
     <label>影视名称</label>
-    <input type="text" name="video-name" placeholder="影视名称">
+    <input type="text" name="videoName" placeholder="影视名称">
   </div>
   <div class="fields equal width">
     <div class="field">
       <label>影视国家</label>
-      <select class="ui fluid search dropdown" name="video-country">
+      <select class="ui fluid search dropdown" name="videoCountry">
         <option value="">影视国家</option>
         <option value="中国">中国</option>
         <option value="美国">美国</option>
@@ -23,7 +23,7 @@
     </div>
     <div class="six field">
       <label>影视分类</label>
-      <select class="ui fluid search dropdown" name="video-classify">
+      <select class="ui fluid search dropdown" name="videoClassify">
         <option value="">影视分类</option>
         <option value="电影">电影</option>
         <option value="电视剧">电视剧</option>
@@ -35,7 +35,7 @@
     </div>
 	  <div class="field">
 	    <label>影视时间</label>
-	    <input type="date" name="video-time" placeholder="影视时间">
+	    <input type="date" name="videoTime" placeholder="影视时间">
 	  </div>
   </div>
  
@@ -48,7 +48,7 @@
   <div class="fields equal width">
     <div class="field">
       <label>影视评分</label>
-      <select class="ui fluid search dropdown" name="video-star">
+      <select class="ui fluid search dropdown" name="videoStar">
         <option value="">影视评分</option>
         <option value="10.0">10.0</option>
         <option value="9.0">9.0</option>
@@ -64,11 +64,11 @@
     </div>
 	  <div class="field">
 	    <label>影视时长(分钟/季)</label>
-	    <input type="text" name="video-time-long" placeholder="影视时长">
+	    <input type="text" name="videoTimeLong" placeholder="影视时长">
 	  </div>
     <div class="field">
       <label>影视类型</label>
-      <select class="ui fluid search dropdown" name="video-type">
+      <select class="ui fluid search dropdown" name="videoType">
         <option value="">影视类型</option>
         <option value="动作">动作</option>
         <option value="喜剧">喜剧</option>
@@ -96,35 +96,63 @@
   <div class="field">
 	  <div class="field">
 	    <label>影视导演/演员</label>
-	    <input type="text" name="video-actors" placeholder="影视导演/演员">
+	    <input type="text" name="videoActors" placeholder="影视导演/演员">
 	  </div>
   </div>
   <div class="field">
     <label>影视描述</label>
-    <textarea placeholder="影视描述" name="video-detail"></textarea>
+    <textarea placeholder="影视描述" name="videoDetail"></textarea>
   </div>
-  <button class="ui button submit" type="submit">Submit</button>
+  <div class="ui button submit">Submit</div>
   <div class="ui reset button">重置</div>
   <div class="ui clear button">清除提示</div>
-</form>
+</div>
 
 
 
 <script>
   $(function(){
     $('select.dropdown').dropdown()
-    function redirect() {
-      window.location.href='/'
-    }
+    var formdata = new FormData()
+    $('input[name=file]').change(function (e) {
+        console.log(e.target)
+        formdata.append('file', e.target.files[0])
+    })
+    
+    
     $('.ui.form')
     .form({
       inline : true,
       on  : 'blur',
-      onSuccess: redirect
+      onSuccess: function () {
+          ['videoName', 'videoTime', 'videoTimeLong', 'videoActors'].forEach(function (val) {
+            formdata.append(val, $('input[name=' + val + ']').val())
+        });
+        ['videoCountry', 'videoClassify', 'videoStar', 'videoType'].forEach(function (val) {
+            formdata.append(val, $('select[name=' + val + ']').val())
+        });
+        formdata.append('videoDetail',$('textarea').val())
+        $.ajax({
+            url: '/upload',
+            type: 'POST',
+            cache: false,
+            data: formdata,
+            processData: false,
+            contentType: false,
+            dataType: "json",
+            success: function (data) {
+                if (data.code == 200) {
+                    alert('上传成功')
+                    location.href = '/'
+                    formdata = new FormData()
+                }
+            }
+        });
+      }
        ,
       fields: {
         name: {
-          identifier: 'video-name',
+          identifier: 'videoName',
           rules: [
             {
               type   : 'empty',
@@ -133,7 +161,7 @@
           ]
         },
         country: {
-          identifier: 'video-country',
+          identifier: 'videoCountry',
           rules: [
             {
               type   : 'empty',
@@ -142,7 +170,7 @@
           ]
         },
         classify: {
-          identifier: 'video-classify',
+          identifier: 'videoClassify',
           rules: [
             {
               type   : 'empty',
@@ -151,7 +179,7 @@
           ]
         },
         time: {
-          identifier: 'video-time',
+          identifier: 'videoTime',
           rules: [
             {
               type   : 'empty',
@@ -169,7 +197,7 @@
           ]
         },
         star: {
-          identifier: 'video-star',
+          identifier: 'videoStar',
           rules: [
             {
               type   : 'empty',
@@ -178,7 +206,7 @@
           ]
         },
         timelong: {
-          identifier: 'video-time-long',
+          identifier: 'videoTimeLong',
           rules: [
             {
               type   : 'empty',
@@ -187,7 +215,7 @@
           ]
         },
         type: {
-          identifier: 'video-type',
+          identifier: 'videoType',
           rules: [
             {
               type   : 'empty',
@@ -196,7 +224,7 @@
           ]
         },
         actors: {
-          identifier: 'video-actors',
+          identifier: 'videoActors',
           rules: [
             {
               type   : 'empty',
@@ -205,7 +233,7 @@
           ]
         },
         detail: {
-          identifier: 'video-detail',
+          identifier: 'videoDetail',
           rules: [
             {
               type   : 'empty',

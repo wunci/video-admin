@@ -77,28 +77,29 @@ router.post('/upload', koaBody({
         uploadDir: './public/images'
     }
 }), async(ctx, next) => {
+
     var i_body = Object.assign({},ctx.request.body)
-    var fields = i_body['fields']
-        // console.log(ctx.request.body)
-    var name = fields['video-name']
-    var country = fields['video-country']
-    var classify = fields['video-classify']
-    var time1 = fields['video-time']
+    console.log('i_body', i_body)
+    let {videoName,videoCountry,videoClassify,videoTime,
+        videoStar, videoTimeLong, videoType,
+        videoActors,videoDetail} = i_body['fields']
     var img = i_body['files']['file']['path']
-    var star = fields['video-star']
-    var timelong = fields['video-time-long']
-    var type = fields['video-type']
-    var actors = fields['video-actors']
-    var detail = fields['video-detail']
-    var data = [name, country, classify, time1, img.match(/\w+/g)[2], star, timelong, type, actors, detail]
- 
+    var data = [videoName, videoCountry, videoClassify, videoTime,
+                 img.match(/\w+/g)[2], videoStar, videoTimeLong, 
+                 videoType, videoActors, videoDetail]
+    console.log(data)
     await apiModel.insertData(data)
         .then((res) => {
-            // console.log('添加成功')
-            res.body = 'success'
-            ctx.redirect('/')
+            console.log('添加成功')
+            ctx.body = {
+                code:200,
+                message:'上传成功'
+            }
         }).catch(res => {
-            // console.log('error', res)
+            ctx.body = {
+                code: 500,
+                message: '上传失败'
+            }
         })
         
 })
@@ -124,42 +125,51 @@ router.post('/edit/:id', koaBody({
         uploadDir: './public/images'
     }
 }), async(ctx, next) => {
-    var i_body = JSON.parse(JSON.stringify(ctx.request.body))
-    var fields = i_body['fields'] 
-    var name = fields['video-name']
-    var country = fields['video-country']
-    var classify = fields['video-classify']
-    var time1 = fields['video-time']
-    var img = i_body['files']['file']['path']
-    var star = fields['video-star']
-    var timelong = fields['video-time-long']
-    var type = fields['video-type']
-    var actors = fields['video-actors']
-    var detail = fields['video-detail']
-    var data = [name, country, classify, time1, img.match(/\w+/g)[2], star, timelong, type, actors, detail, ctx.params.id];
-    // 更改影片信息，喜欢和评论的列表也要相应更新，比如videName
-    await apiModel.updateLikeName([name, ctx.params.id]) 
-    await apiModel.updateCommentName([name,ctx.params.id]) 
-    if (i_body['files']['file']['size'] == 0) {
-        dataNoneImg = [name, country, classify, time1, star, timelong, type, actors, detail, ctx.params.id];
-        await apiModel.updateDataNoneImg(dataNoneImg)
-            .then(() => {
-                ctx.redirect('/')
-            }).catch(res => {
-                // console.log('error', res)
-            })
-
-    } else {
-       await Promise.all([
-                apiModel.updateDataHasImg(data),
-                apiModel.updateLikesImg([img.match(/\w+/g)[2],ctx.params.id])
-            ])
-            .then(() => {
-                // console.log('更新成功')
-                ctx.redirect('/')
-            })
-         
+    var i_body = Object.assign({}, ctx.request.body)
+    console.log('i_body', i_body)
+    let {
+        videoName,
+        videoCountry,
+        videoClassify,
+        videoTime,
+        videoStar,
+        videoTimeLong,
+        videoType,
+        videoActors,
+        videoDetail,
+        file
+    } = i_body['fields'];
+    let img = ''
+    if (Object.keys(i_body['files']).length == 0){
+        img = file
+    }else{
+        img = i_body['files']['newFile']['path'].match(/\w+/g)[2]
     }
+    var data = [videoName, videoCountry, videoClassify, videoTime,
+        img, videoStar, videoTimeLong,
+        videoType, videoActors, videoDetail,  ctx.params.id
+    ]
+    console.log(data)
+    // 更改影片信息，喜欢和评论的列表也要相应更新，比如videName
+    await apiModel.updateLikeName([videoName, ctx.params.id])
+    await apiModel.updateCommentName([videoName, ctx.params.id])
+    await Promise.all([
+            apiModel.updateDataHasImg(data),
+            apiModel.updateLikesImg([img,ctx.params.id])
+        ])
+        .then(() => {
+            console.log('更新成功')
+            ctx.body = {
+                code:200,
+                message:'修改成功'
+            }
+        }).catch(e=>{
+            ctx.body = {
+                code: 500,
+                message: '修改失败'
+            }
+        })
+         
 })
 // 删除
 router.post('/delete/:id', koaBody(), async(ctx, next) => {
