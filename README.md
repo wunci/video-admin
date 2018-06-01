@@ -70,7 +70,7 @@ GitHub: [管理后台](https://github.com/wclimb/video-admin)
 
 ## 前端后台演示
 
-![](http://oswpupqu5.bkt.clouddn.com/admin.gif)
+![](http://www.wclimb.site/cdn/admin.gif)
 
 ## 前端功能
 
@@ -109,5 +109,5 @@ GitHub: [管理后台](https://github.com/wclimb/video-admin)
 
 手机扫描图下二维码预览
 
-![](http://oswpupqu5.bkt.clouddn.com/1504574571.png)
+![](http://www.wclimb.site/cdn/1504574571.png)
 
