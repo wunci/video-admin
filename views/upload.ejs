@@ -126,7 +126,7 @@
       inline : true,
       on  : 'blur',
       onSuccess: function () {
-        var isAllow = false;
+        isAllow = false;
         ['videoName', 'videoTime', 'videoTimeLong', 'videoActors'].forEach(function (val) {
             formdata.append(val, $('input[name=' + val + ']').val())
         });
