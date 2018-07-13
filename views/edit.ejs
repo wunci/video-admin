@@ -123,11 +123,14 @@
         console.log(e.target)
         formdata.append('newFile', e.target.files[0])
     })
+    var isAllow = true
+    if(!isAllow) return
     $('.ui.form')
     .form({
       inline : true,
       on  : 'blur',
       onSuccess: function() {
+        isAllow = false;
         ['videoName', 'videoTime', 'videoTimeLong', 'videoActors'].forEach(function (val) {
             formdata.append(val, $('input[name=' + val + ']').val())
         });
@@ -144,6 +147,7 @@
             contentType: false,
             dataType: "json",
             success: function (data) {
+                isAllow = true
                 if (data.code == 200) {
                     alert('修改成功')
                     location.href = '/'

@@ -119,13 +119,15 @@
         formdata.append('file', e.target.files[0])
     })
     
-    
+    var isAllow = true
+    if(!isAllow) return
     $('.ui.form')
     .form({
       inline : true,
       on  : 'blur',
       onSuccess: function () {
-          ['videoName', 'videoTime', 'videoTimeLong', 'videoActors'].forEach(function (val) {
+        var isAllow = false;
+        ['videoName', 'videoTime', 'videoTimeLong', 'videoActors'].forEach(function (val) {
             formdata.append(val, $('input[name=' + val + ']').val())
         });
         ['videoCountry', 'videoClassify', 'videoStar', 'videoType'].forEach(function (val) {
@@ -141,10 +143,14 @@
             contentType: false,
             dataType: "json",
             success: function (data) {
+                isAllow = true
                 if (data.code == 200) {
                     alert('上传成功')
                     location.href = '/'
                     formdata = new FormData()
+                }else{
+                  alert('上传失败')  
+                  formdata = new FormData()
                 }
             }
         });
