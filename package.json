@@ -9,8 +9,7 @@
   },
   "author": "wclimb",
   "license": "MIT",
-  "devDependencies": {
-    "chai": "^4.1.2",
+  "dependencies": {
     "ejs": "^2.5.7",
     "jsonwebtoken": "^8.2.1",
     "koa": "^2.3.0",
@@ -24,12 +23,13 @@
     "koa-static-cache": "^5.1.1",
     "koa-views": "^6.0.2",
     "md5": "^2.2.1",
-    "mocha": "^4.0.1",
-    "mysql": "^2.14.1"
-  },
-  "dependencies": {
+    "mysql": "^2.14.1",
     "koa-logger": "^3.1.0",
     "moment": "^2.20.1",
     "trek-captcha": "^0.3.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
   }
 }
