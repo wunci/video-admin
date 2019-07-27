@@ -179,6 +179,7 @@ router.post(
       ctx.params.id,
     ];
     // 更改影片信息，喜欢和评论的列表也要相应更新，比如videName
+    // 2019-7-27 这里是个大坑，当时too young，按道理查询是需要联表查询的，现在已经不好改了。可以参照lib/sql.js里最后的一段sql，获取喜欢列表的优化版本
     await apiModel.updateLikeName([videoName, ctx.params.id]);
     await apiModel.updateCommentName([videoName, ctx.params.id]);
     await Promise.all([

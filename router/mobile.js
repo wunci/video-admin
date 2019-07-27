@@ -250,8 +250,8 @@ router.post('/vi/getUserLikeData', koaBody(), async ctx => {
   var userName = ctx.request.body.userName;
 
   await Promise.all([
-    apiModel.getLikeList(userName, 1),
-    apiModel.getLikeList(userName, 2),
+    apiModel.getUserLikeV2(userName, 1),
+    apiModel.getUserLikeV2(userName, 2),
   ])
     .then(res => {
       ctx.body = {
@@ -279,7 +279,7 @@ router.post('/vi/editUserName', koaBody(), async (ctx, next) => {
         }
       });
       if (!userExist) {
-        let password = '';
+        // 2019-7-27 这里是个大坑，当时too young，按道理查询是需要联表查询的，现在已经不好改了，可以参照lib/sql.js里最后的一段sql，获取喜欢列表的优化版本
         await Promise.all([
           apiModel.findMobileUserByName(userName),
           apiModel.updateMobileName([newName, userName]),

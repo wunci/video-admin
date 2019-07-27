@@ -45,13 +45,14 @@
 		$('.ui.dropdown').dropdown()
 		$(function(){
 			$('.delete').click((e)=>{
-				console.log(e.target.getAttribute('v-id'))
 				$.ajax({
-					url:'/delete/'+e.target.getAttribute('v-id'),
+					url:'/delete/' + e.target.getAttribute('v-id'),
 					type:'POST',
 					success:function(res){
-						if (res==='success') {
+						if (res === 'success') {
 							window.location.reload()
+						} else {
+							alert('你没有权限删除')
 						}
 					}	
 				})
